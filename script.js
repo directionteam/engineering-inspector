@@ -434,7 +434,7 @@ const Game = {
   hintTimeout: null,
 
   toolbarVisible: false,
-
+  usedFaults: [],
   bestScore: parseInt(localStorage.getItem('inspectorBestScoreV2') || '0', 10),
 };
 
@@ -737,6 +737,7 @@ async function startGame() {
   Game.faultFixed = false;
   Game.holdingTool = null;
   Game.toolbarVisible = false;
+     Game.usedFaults = [];   // ← قائمة الأعطال المستخدمة
 
   el.hudScore.textContent = '0';
   el.hudTime.textContent = Game.timeLeft;
@@ -764,7 +765,19 @@ async function startGame() {
 function showFault(index) {
   if (index >= Game.totalFaults) { endGame(true); return; }
 
-  const chosen = FAULTS[Math.floor(Math.random() * FAULTS.length)];
+  // 🔍 اختر عطلاً لم يُستخدم بعد
+  let availableFaults = FAULTS.filter(f => !Game.usedFaults.includes(f.id));
+
+  // إذا استُنفدت كل الأعطال، أعد التصفير
+  if (availableFaults.length === 0) {
+    Game.usedFaults = [];
+    availableFaults = FAULTS.slice();
+  }
+
+  const chosen = availableFaults[Math.floor(Math.random() * availableFaults.length)];
+
+  // سجّل العطل كمستخدم
+  Game.usedFaults.push(chosen.id);
 
   Game.faultIndex = index;
   Game.currentFault = chosen;
