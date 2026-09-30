@@ -1392,14 +1392,19 @@ function onHandsResults(results) {
   el.fingerCursor.style.left = x + 'px';
   el.fingerCursor.style.top = y + 'px';
 
-  // هل نحمل أداة؟
+   // هل نحمل أداة؟
   if (Game.holdingTool) {
-    // محاولة الإفلات عند إغلاق اليد قليلاً (اختياري): نكتفي بفحص الموقع
-    // الإفلات يحصل عند خروج اليد من شريط الأدوات ودخولها إلى الـ Zoom
-    tryDropTool(x, y);
+    // نحمل أداة → تحقق إن كان الإصبع داخل الـ Zoom للإفلات
+    checkDropWithDelay(x, y);
   } else {
-    // فحص Hover على العطل
-    checkHover(x, y);
+    // لا نحمل شيئاً → هل الإصبع فوق عطل أم فوق أداة؟
+    if (Game.faultDiagnosed && !Game.faultFixed && Game.toolbarVisible) {
+      // نحن في وضع اختيار الأداة
+      checkToolHover(x, y);
+    } else {
+      // نحن في وضع فحص العطل
+      checkHover(x, y);
+    }
   }
 }
 
