@@ -1,9 +1,9 @@
 /* =====================================================
-   المهندس الفاحص v2 - PRO EDITION
-   الكود الكامل + اختيار الأدوات بالإصبع
+   المهندس الفاحص v3 - FINAL EDITION
+   كل التعديلات: كاميرا - بطاقة تعليمية - منع تكرار
 ===================================================== */
 
-/* ==================== إعدادات الصعوبة ==================== */
+/* ==================== الصعوبة ==================== */
 const DIFFICULTIES = {
   easy:   { faults: 3, timePerFault: 15, wrongTools: 1, name: 'سهل' },
   medium: { faults: 5, timePerFault: 15, wrongTools: 2, name: 'متوسط' },
@@ -11,7 +11,7 @@ const DIFFICULTIES = {
 };
 
 /* =====================================================
-   الأعطال
+   الأعطال (مع معلومة تعليمية)
 ===================================================== */
 const FAULTS = [
   {
@@ -19,9 +19,11 @@ const FAULTS = [
     deviceName: 'SOLAR PANEL',
     title: 'خلية شمسية مكسورة',
     info: 'شرخ دقيق في الخلية رقم 7 يمنع توليد الطاقة من هذه المنطقة.',
+    fact: 'الشقوق الدقيقة تقلل كفاءة اللوحة بنسبة 10-30%. الخلية الواحدة التالفة تُعطّل السلسلة بأكملها.',
+    tip: 'تجنّب الصدمات أثناء التركيب، وافحص اللوحة بعد أي عاصفة.',
     pos: { x: 18, y: 48 },
-targetZone: { x: 470, y: 265, w: 220, h: 200 },
-     correctTool: 'cell',
+    targetZone: { x: 470, y: 265, w: 240, h: 200 },
+    correctTool: 'cell',
     tools: [
       { id: 'cell',   name: 'خلية بديلة', icon: '🔋', correct: true },
       { id: 'screw',  name: 'مفك كهربائي', icon: '🔧', correct: false },
@@ -35,9 +37,11 @@ targetZone: { x: 470, y: 265, w: 220, h: 200 },
     deviceName: 'DC CABLE',
     title: 'كابل DC مقطوع',
     info: 'انقطاع في الكابل الأحمر بين اللوحة وصندوق التجميع.',
+    fact: 'الكابلات DC تنقل تياراً عالياً (10-20 أمبير). القطع يوقف نقل الطاقة فوراً ويسبب شرارة.',
+    tip: 'استخدم كابلات مقاومة للأشعة UV، وافحص العزل سنوياً.',
     pos: { x: 33, y: 50 },
-targetZone: { x: 400, y: 180, w: 250, h: 180 },
-     correctTool: 'cable',
+    targetZone: { x: 400, y: 180, w: 300, h: 220 },
+    correctTool: 'cable',
     tools: [
       { id: 'cable',    name: 'كابل + لحام', icon: '🔌', correct: true },
       { id: 'tape',     name: 'شريط عازل',   icon: '📏', correct: false },
@@ -51,9 +55,11 @@ targetZone: { x: 400, y: 180, w: 250, h: 180 },
     deviceName: 'FUSE BOX',
     title: 'فيوز تالف',
     info: 'الفيوز الأوسط احترق بسبب ارتفاع التيار.',
+    fact: 'الفيوز يحمي النظام من التيار الزائد. عند احتراقه، يقطع الدائرة لحماية باقي المكونات.',
+    tip: 'اختر فيوزاً بنفس الأمبير الموصى به، ولا تستبدله بسلك أبداً.',
     pos: { x: 42, y: 48 },
-targetZone: { x: 400, y: 230, w: 200, h: 200 },
-     correctTool: 'fuse',
+    targetZone: { x: 400, y: 230, w: 240, h: 220 },
+    correctTool: 'fuse',
     tools: [
       { id: 'fuse',   name: 'فيوز 20A',   icon: '🛡️', correct: true },
       { id: 'fuse50', name: 'فيوز 50A',   icon: '⚡', correct: false },
@@ -67,9 +73,11 @@ targetZone: { x: 400, y: 230, w: 200, h: 200 },
     deviceName: 'CHARGE CONTROLLER',
     title: 'منظم الشحن معطوب',
     info: 'الشاشة تعرض "ERROR E7".',
+    fact: 'المنظم ينظّم جهد الشحن من اللوحة إلى البطارية. يمنع الشحن الزائد الذي يتلف البطارية.',
+    tip: 'نظّف فتحات التبريد، وافحص الإعدادات كل 6 أشهر.',
     pos: { x: 58, y: 47 },
-targetZone: { x: 400, y: 190, w: 300, h: 200 },
-     correctTool: 'reset',
+    targetZone: { x: 400, y: 190, w: 340, h: 220 },
+    correctTool: 'reset',
     tools: [
       { id: 'reset',   name: 'إعادة تشغيل', icon: '🔄', correct: true },
       { id: 'wrench',  name: 'مفتاح ربط',   icon: '🔧', correct: false },
@@ -83,9 +91,11 @@ targetZone: { x: 400, y: 190, w: 300, h: 200 },
     deviceName: 'BATTERY PACK',
     title: 'خلية بطارية منتفخة',
     info: 'الخلية رقم 3 منتفخة ولا تحفظ الشحن.',
+    fact: 'الخلية المنتفخة نتيجة تفاعلات كيميائية داخلية. قد تتسبب في حريق إذا لم تُستبدل.',
+    tip: 'لا تشحن البطارية في حرارة عالية، وافحص الجهد بانتظام.',
     pos: { x: 75, y: 46 },
-targetZone: { x: 360, y: 220, w: 250, h: 220 },
-     correctTool: 'batteryCell',
+    targetZone: { x: 360, y: 220, w: 280, h: 240 },
+    correctTool: 'batteryCell',
     tools: [
       { id: 'batteryCell', name: 'خلية بديلة', icon: '🔋', correct: true },
       { id: 'water',       name: 'ماء مقطر',   icon: '💧', correct: false },
@@ -99,9 +109,11 @@ targetZone: { x: 360, y: 220, w: 250, h: 220 },
     deviceName: 'INVERTER',
     title: 'عاكس محروق',
     info: 'المكثفات سوداء ومتفحمة.',
+    fact: 'العاكس يحوّل DC إلى AC بتردد 50/60 Hz. ارتفاع الحرارة يحرق المكثفات.',
+    tip: 'وفّر تهوية جيدة، ولا تحمّله أكثر من طاقته.',
     pos: { x: 91, y: 48 },
-targetZone: { x: 400, y: 200, w: 400, h: 220 },
-     correctTool: 'inverter',
+    targetZone: { x: 400, y: 200, w: 420, h: 240 },
+    correctTool: 'inverter',
     tools: [
       { id: 'inverter', name: 'عاكس جديد', icon: '🔀', correct: true },
       { id: 'fan',      name: 'مروحة تبريد', icon: '🌀', correct: false },
@@ -115,9 +127,11 @@ targetZone: { x: 400, y: 200, w: 400, h: 220 },
     deviceName: 'MOUNTING BRACKET',
     title: 'برغي ناقص في الحامل',
     info: 'البرغي رقم 4 مفقود.',
+    fact: 'البراغي تحفظ استقرار اللوحة. نقصها يعرض اللوحة للاهتزاز والتلف عند الرياح.',
+    tip: 'افحص البراغي كل 3 أشهر، خاصة بعد الرياح القوية.',
     pos: { x: 22, y: 55 },
-targetZone: { x: 540, y: 280, w: 200, h: 180 },
-     correctTool: 'screwdriver',
+    targetZone: { x: 540, y: 280, w: 220, h: 200 },
+    correctTool: 'screwdriver',
     tools: [
       { id: 'screwdriver', name: 'مفك + برغي', icon: '🔩', correct: true },
       { id: 'hammer',      name: 'مطرقة',      icon: '🔨', correct: false },
@@ -435,7 +449,10 @@ const Game = {
 
   toolbarVisible: false,
   usedFaults: [],
-  bestScore: parseInt(localStorage.getItem('inspectorBestScoreV2') || '0', 10),
+
+  factBtnHoverStart: 0,
+
+  bestScore: parseInt(localStorage.getItem('inspectorBestScoreV3') || '0', 10),
 };
 
 /* =====================================================
@@ -484,9 +501,12 @@ const el = {
   toast: document.getElementById('toast'),
   particles: document.getElementById('particles'),
 
-  lcdText: document.getElementById('lcdText'),
-  batteryPct: document.getElementById('batteryPct'),
-  batteryLevel: document.getElementById('batteryLevel'),
+  factCard: document.getElementById('factCard'),
+  factDevice: document.getElementById('factDevice'),
+  factTitle: document.getElementById('factTitle'),
+  factText: document.getElementById('factText'),
+  factTip: document.getElementById('factTip'),
+  factContinueBtn: document.getElementById('factContinueBtn'),
 };
 
 /* =====================================================
@@ -528,11 +548,9 @@ const Sound = {
 
     const src = this.ctx.createBufferSource();
     src.buffer = buffer;
-
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = filterFreq;
-
     const gain = this.ctx.createGain();
     gain.gain.setValueAtTime(volume, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
@@ -545,7 +563,6 @@ const Sound = {
 
   ping() { this.tone(880, 0.08, 'sine', 0.06); },
   lock() { this.tone(1200, 0.1, 'square', 0.05); },
-  pickTool() { this.tone(660, 0.08, 'sine', 0.1); this.tone(880, 0.08, 'sine', 0.08, 0.06); },
   tick() { this.tone(1500, 0.04, 'square', 0.07); },
 
   start() {
@@ -614,6 +631,11 @@ const Sound = {
     this.tone(200, 0.25, 'sawtooth', 0.12);
     this.tone(150, 0.3, 'sawtooth', 0.1, 0.05);
     this.noise(0.3, 0.08, 800);
+  },
+
+  factAppear() {
+    this.tone(660, 0.2, 'sine', 0.1);
+    this.tone(880, 0.25, 'sine', 0.1, 0.15);
   },
 };
 
@@ -737,7 +759,8 @@ async function startGame() {
   Game.faultFixed = false;
   Game.holdingTool = null;
   Game.toolbarVisible = false;
-     Game.usedFaults = [];   // ← قائمة الأعطال المستخدمة
+  Game.usedFaults = [];
+  Game.factBtnHoverStart = 0;
 
   el.hudScore.textContent = '0';
   el.hudTime.textContent = Game.timeLeft;
@@ -745,6 +768,8 @@ async function startGame() {
   el.hudFaults.textContent = `1 / ${Game.totalFaults}`;
   el.comboBox.classList.add('hidden');
   el.cursorTool.textContent = '';
+  el.factCard.classList.add('hidden');
+  el.factCard.classList.remove('active');
 
   const handsReady = await initHands();
   if (handsReady) await startCamera();
@@ -760,23 +785,20 @@ async function startGame() {
 }
 
 /* =====================================================
-   عرض العطل
+   عرض العطل (مع منع التكرار)
 ===================================================== */
 function showFault(index) {
   if (index >= Game.totalFaults) { endGame(true); return; }
 
-  // 🔍 اختر عطلاً لم يُستخدم بعد
+  // اختر عطلاً لم يُستخدم بعد
   let availableFaults = FAULTS.filter(f => !Game.usedFaults.includes(f.id));
 
-  // إذا استُنفدت كل الأعطال، أعد التصفير
   if (availableFaults.length === 0) {
     Game.usedFaults = [];
     availableFaults = FAULTS.slice();
   }
 
   const chosen = availableFaults[Math.floor(Math.random() * availableFaults.length)];
-
-  // سجّل العطل كمستخدم
   Game.usedFaults.push(chosen.id);
 
   Game.faultIndex = index;
@@ -900,14 +922,12 @@ function prepareToolbar(fault) {
       <span class="tool-name">${tool.name}</span>
     `;
 
-    // دعم الماوس
     btn.addEventListener('mousedown', (e) => {
       if (Game.faultFixed) return;
       e.preventDefault();
       pickTool(tool, btn);
     });
 
-    // دعم اللمس
     btn.addEventListener('touchstart', (e) => {
       if (Game.faultFixed) return;
       e.preventDefault();
@@ -919,7 +939,7 @@ function prepareToolbar(fault) {
 }
 
 /* =====================================================
-   اختيار الأداة (عن طريق النقر/اللمس)
+   اختيار الأداة
 ===================================================== */
 function pickTool(tool, btnEl) {
   if (Game.faultFixed || Game.holdingTool) return;
@@ -934,7 +954,7 @@ function pickTool(tool, btnEl) {
 }
 
 /* =====================================================
-   اختيار الأداة عبر تمرير الإصبع فوقها (400ms)
+   اختيار الأداة بالإصبع (hover 400ms)
 ===================================================== */
 let toolHoverTimer = null;
 let toolHoverTarget = null;
@@ -957,7 +977,11 @@ function checkToolHover(x, y) {
     clearTimeout(toolHoverTimer);
     toolHoverTarget = hoveredBtn;
 
-    buttons.forEach(b => b.style.transform = '');
+    buttons.forEach(b => {
+      b.style.transform = '';
+      b.style.borderColor = '';
+      b.style.boxShadow = '';
+    });
 
     if (hoveredBtn) {
       hoveredBtn.style.transform = 'translateY(-6px) scale(1.05)';
@@ -981,7 +1005,7 @@ function checkToolHover(x, y) {
 }
 
 /* =====================================================
-   إفلات الأداة — يجب أن يبقى الإصبع 600ms في المنطقة
+   إفلات الأداة (600ms في منطقة العطل)
 ===================================================== */
 let dropTimer = null;
 
@@ -1007,9 +1031,7 @@ function checkDropWithDelay(x, y) {
 
   if (inZone && !dropTimer) {
     dropTimer = setTimeout(() => {
-      if (Game.holdingTool) {
-        tryDropTool(x, y);
-      }
+      if (Game.holdingTool) tryDropTool(x, y);
       dropTimer = null;
     }, 600);
   } else if (!inZone) {
@@ -1126,9 +1148,8 @@ function applyRepair(x, y) {
 
       document.querySelectorAll('.window-light').forEach(w => w.classList.add('on'));
 
-      setTimeout(() => {
-        showFault(Game.faultIndex + 1);
-      }, 800);
+      // 📚 اعرض البطاقة التعليمية
+      showFactCard(fault);
     }, 350);
   }, 900);
 }
@@ -1149,6 +1170,35 @@ function shakeScene() {
   el.scene.classList.add('shake');
   setTimeout(() => el.scene.classList.remove('shake'), 400);
 }
+
+/* =====================================================
+   بطاقة المعلومة التعليمية
+===================================================== */
+function showFactCard(fault) {
+  el.factDevice.textContent = fault.deviceName;
+  el.factTitle.textContent = fault.title;
+  el.factText.textContent = fault.fact || 'لم تُضف معلومة بعد.';
+  el.factTip.textContent = fault.tip || 'لم تُضف نصيحة بعد.';
+
+  el.factCard.classList.remove('hidden');
+  setTimeout(() => el.factCard.classList.add('active'), 30);
+
+  Sound.factAppear();
+  Game.factBtnHoverStart = 0;
+}
+
+function hideFactCard() {
+  el.factCard.classList.remove('active');
+  setTimeout(() => {
+    el.factCard.classList.add('hidden');
+    showFault(Game.faultIndex + 1);
+  }, 350);
+}
+
+el.factContinueBtn.addEventListener('click', () => {
+  Sound.tone(1200, 0.1, 'square', 0.08);
+  hideFactCard();
+});
 
 /* =====================================================
    إغلاق الزووم
@@ -1201,10 +1251,12 @@ function endGame(won) {
   el.zoomView.classList.add('hidden');
   el.toolbar.classList.add('hidden');
   el.faultPoint.classList.add('hidden');
+  el.factCard.classList.add('hidden');
+  el.factCard.classList.remove('active');
 
   if (Game.score > Game.bestScore) {
     Game.bestScore = Game.score;
-    localStorage.setItem('inspectorBestScoreV2', Game.bestScore.toString());
+    localStorage.setItem('inspectorBestScoreV3', Game.bestScore.toString());
   }
 
   const stars = calculateStars(Game.score, won);
@@ -1252,12 +1304,12 @@ async function initHands() {
     locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`,
   });
 
-   Game.hands.setOptions({
+  Game.hands.setOptions({
     maxNumHands: 1,
     modelComplexity: 0,
     minDetectionConfidence: 0.6,
     minTrackingConfidence: 0.6,
-    selfieMode: false,   // ← التغيير
+    selfieMode: false,   // ← الكاميرا لا تعكس الصورة داخلياً
   });
 
   Game.hands.onResults(onHandsResults);
@@ -1304,8 +1356,9 @@ function onHandsResults(results) {
     el.fingerCursor.classList.remove('visible');
     return;
   }
+
   const tip = results.multiHandLandmarks[0][8];
-  // عكس x لأن المستخدم يرى نفسه في المرآة
+  // عكس الإحداثيات أفقياً لأن الصورة في الفيديو معروضة بشكل المرآة
   const x = (1 - tip.x) * window.innerWidth;
   const y = tip.y * window.innerHeight;
 
@@ -1317,6 +1370,26 @@ function onHandsResults(results) {
   el.fingerCursor.classList.add('visible');
   el.fingerCursor.style.left = x + 'px';
   el.fingerCursor.style.top = y + 'px';
+
+  // ⭐ إذا كانت بطاقة المعلومة مفتوحة
+  if (el.factCard.classList.contains('active')) {
+    const btnRect = el.factContinueBtn.getBoundingClientRect();
+    const onBtn =
+      x >= btnRect.left && x <= btnRect.right &&
+      y >= btnRect.top && y <= btnRect.bottom;
+
+    if (onBtn) {
+      if (!Game.factBtnHoverStart) Game.factBtnHoverStart = performance.now();
+      const elapsed = performance.now() - Game.factBtnHoverStart;
+      if (elapsed >= 600) {
+        Game.factBtnHoverStart = 0;
+        el.factContinueBtn.click();
+      }
+    } else {
+      Game.factBtnHoverStart = 0;
+    }
+    return;
+  }
 
   // منطق التفاعل
   if (Game.holdingTool) {
@@ -1339,6 +1412,26 @@ document.addEventListener('mousemove', (e) => {
   el.fingerCursor.style.left = e.clientX + 'px';
   el.fingerCursor.style.top = e.clientY + 'px';
 
+  // بطاقة المعلومة
+  if (el.factCard.classList.contains('active')) {
+    const btnRect = el.factContinueBtn.getBoundingClientRect();
+    const onBtn =
+      e.clientX >= btnRect.left && e.clientX <= btnRect.right &&
+      e.clientY >= btnRect.top && e.clientY <= btnRect.bottom;
+
+    if (onBtn) {
+      if (!Game.factBtnHoverStart) Game.factBtnHoverStart = performance.now();
+      const elapsed = performance.now() - Game.factBtnHoverStart;
+      if (elapsed >= 600) {
+        Game.factBtnHoverStart = 0;
+        el.factContinueBtn.click();
+      }
+    } else {
+      Game.factBtnHoverStart = 0;
+    }
+    return;
+  }
+
   if (Game.holdingTool) {
     checkDropWithDelay(e.clientX, e.clientY);
   } else if (Game.toolbarVisible && Game.faultDiagnosed && !Game.faultFixed) {
@@ -1360,6 +1453,25 @@ document.addEventListener('touchmove', (e) => {
   el.fingerCursor.classList.add('visible');
   el.fingerCursor.style.left = t.clientX + 'px';
   el.fingerCursor.style.top = t.clientY + 'px';
+
+  if (el.factCard.classList.contains('active')) {
+    const btnRect = el.factContinueBtn.getBoundingClientRect();
+    const onBtn =
+      t.clientX >= btnRect.left && t.clientX <= btnRect.right &&
+      t.clientY >= btnRect.top && t.clientY <= btnRect.bottom;
+
+    if (onBtn) {
+      if (!Game.factBtnHoverStart) Game.factBtnHoverStart = performance.now();
+      const elapsed = performance.now() - Game.factBtnHoverStart;
+      if (elapsed >= 600) {
+        Game.factBtnHoverStart = 0;
+        el.factContinueBtn.click();
+      }
+    } else {
+      Game.factBtnHoverStart = 0;
+    }
+    return;
+  }
 
   if (Game.holdingTool) {
     checkDropWithDelay(t.clientX, t.clientY);
@@ -1404,5 +1516,4 @@ window.addEventListener('resize', () => {
 Particles.init();
 el.bestScore.textContent = Game.bestScore;
 
-console.log('%c🏗️ المهندس الفاحص v2 - PRO', 'color:#ffe066;font-size:20px;font-weight:900;');
-console.log('%cSolar Plant Inspector · Advanced Edition', 'color:#7ac0ff;font-size:12px;');
+console.log('%c🏗️ المهندس الفاحص v3 - FINAL', 'color:#ffe066;font-size:20px;font-weight:900;');
