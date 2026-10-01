@@ -1252,12 +1252,12 @@ async function initHands() {
     locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`,
   });
 
-  Game.hands.setOptions({
+   Game.hands.setOptions({
     maxNumHands: 1,
     modelComplexity: 0,
     minDetectionConfidence: 0.6,
     minTrackingConfidence: 0.6,
-    selfieMode: true,
+    selfieMode: false,   // ← التغيير
   });
 
   Game.hands.onResults(onHandsResults);
