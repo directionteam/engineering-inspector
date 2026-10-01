@@ -20,8 +20,8 @@ const FAULTS = [
     title: 'خلية شمسية مكسورة',
     info: 'شرخ دقيق في الخلية رقم 7 يمنع توليد الطاقة من هذه المنطقة.',
     pos: { x: 18, y: 48 },
-    targetZone: { x: 400, y: 200, w: 180, h: 140 },
-    correctTool: 'cell',
+targetZone: { x: 470, y: 265, w: 220, h: 200 },
+     correctTool: 'cell',
     tools: [
       { id: 'cell',   name: 'خلية بديلة', icon: '🔋', correct: true },
       { id: 'screw',  name: 'مفك كهربائي', icon: '🔧', correct: false },
@@ -36,8 +36,8 @@ const FAULTS = [
     title: 'كابل DC مقطوع',
     info: 'انقطاع في الكابل الأحمر بين اللوحة وصندوق التجميع.',
     pos: { x: 33, y: 50 },
-    targetZone: { x: 400, y: 200, w: 180, h: 140 },
-    correctTool: 'cable',
+targetZone: { x: 400, y: 180, w: 250, h: 180 },
+     correctTool: 'cable',
     tools: [
       { id: 'cable',    name: 'كابل + لحام', icon: '🔌', correct: true },
       { id: 'tape',     name: 'شريط عازل',   icon: '📏', correct: false },
@@ -52,8 +52,8 @@ const FAULTS = [
     title: 'فيوز تالف',
     info: 'الفيوز الأوسط احترق بسبب ارتفاع التيار.',
     pos: { x: 42, y: 48 },
-    targetZone: { x: 400, y: 200, w: 180, h: 140 },
-    correctTool: 'fuse',
+targetZone: { x: 400, y: 230, w: 200, h: 200 },
+     correctTool: 'fuse',
     tools: [
       { id: 'fuse',   name: 'فيوز 20A',   icon: '🛡️', correct: true },
       { id: 'fuse50', name: 'فيوز 50A',   icon: '⚡', correct: false },
@@ -68,8 +68,8 @@ const FAULTS = [
     title: 'منظم الشحن معطوب',
     info: 'الشاشة تعرض "ERROR E7".',
     pos: { x: 58, y: 47 },
-    targetZone: { x: 400, y: 200, w: 220, h: 140 },
-    correctTool: 'reset',
+targetZone: { x: 400, y: 190, w: 300, h: 200 },
+     correctTool: 'reset',
     tools: [
       { id: 'reset',   name: 'إعادة تشغيل', icon: '🔄', correct: true },
       { id: 'wrench',  name: 'مفتاح ربط',   icon: '🔧', correct: false },
@@ -84,8 +84,8 @@ const FAULTS = [
     title: 'خلية بطارية منتفخة',
     info: 'الخلية رقم 3 منتفخة ولا تحفظ الشحن.',
     pos: { x: 75, y: 46 },
-    targetZone: { x: 400, y: 220, w: 200, h: 140 },
-    correctTool: 'batteryCell',
+targetZone: { x: 360, y: 220, w: 250, h: 220 },
+     correctTool: 'batteryCell',
     tools: [
       { id: 'batteryCell', name: 'خلية بديلة', icon: '🔋', correct: true },
       { id: 'water',       name: 'ماء مقطر',   icon: '💧', correct: false },
@@ -100,8 +100,8 @@ const FAULTS = [
     title: 'عاكس محروق',
     info: 'المكثفات سوداء ومتفحمة.',
     pos: { x: 91, y: 48 },
-    targetZone: { x: 400, y: 220, w: 260, h: 160 },
-    correctTool: 'inverter',
+targetZone: { x: 400, y: 200, w: 400, h: 220 },
+     correctTool: 'inverter',
     tools: [
       { id: 'inverter', name: 'عاكس جديد', icon: '🔀', correct: true },
       { id: 'fan',      name: 'مروحة تبريد', icon: '🌀', correct: false },
@@ -116,8 +116,8 @@ const FAULTS = [
     title: 'برغي ناقص في الحامل',
     info: 'البرغي رقم 4 مفقود.',
     pos: { x: 22, y: 55 },
-    targetZone: { x: 400, y: 200, w: 180, h: 140 },
-    correctTool: 'screwdriver',
+targetZone: { x: 540, y: 280, w: 200, h: 180 },
+     correctTool: 'screwdriver',
     tools: [
       { id: 'screwdriver', name: 'مفك + برغي', icon: '🔩', correct: true },
       { id: 'hammer',      name: 'مطرقة',      icon: '🔨', correct: false },
@@ -1304,9 +1304,9 @@ function onHandsResults(results) {
     el.fingerCursor.classList.remove('visible');
     return;
   }
-
   const tip = results.multiHandLandmarks[0][8];
-  const x = tip.x * window.innerWidth;
+  // عكس x لأن المستخدم يرى نفسه في المرآة
+  const x = (1 - tip.x) * window.innerWidth;
   const y = tip.y * window.innerHeight;
 
   Game.fingerActive = true;
