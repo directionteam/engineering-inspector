@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>المهندس الفاحص v2 | Solar Plant Inspector Pro</title>
 
-  <!-- ==================== مكتبة MediaPipe Hands عبر CDN ==================== -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
 
-  <!-- ==================== ملف التصميم ==================== -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -17,13 +15,10 @@
 
 <div id="app">
 
-  <!-- ==================== الخلفية ==================== -->
   <div class="sky-layer"></div>
   <div class="ground-layer"></div>
 
-  <!-- ============================================================
-       شاشة 1: البداية + اختيار الصعوبة
-  ============================================================ -->
+  <!-- شاشة البداية -->
   <div id="startScreen" class="screen">
     <div class="start-card">
       <div class="logo-big">☀️</div>
@@ -36,7 +31,6 @@
         استخدم <b>إصبع السبابة</b> لفحص الأعطال، وسحب الأدوات المناسبة لإصلاحها.
       </p>
 
-      <!-- اختيار الصعوبة -->
       <h3 class="difficulty-title">اختر مستوى الصعوبة:</h3>
       <div class="difficulty-grid">
         <button class="diff-btn" data-diff="easy">
@@ -66,9 +60,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       شاشة 2: النتيجة
-  ============================================================ -->
+  <!-- شاشة النتيجة -->
   <div id="endScreen" class="screen hidden">
     <div class="end-card">
       <h1 id="endTitle">انتهى الوقت!</h1>
@@ -96,9 +88,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       HUD (شريط المعلومات العلوي)
-  ============================================================ -->
+  <!-- HUD -->
   <div id="hud" class="hidden">
     <div class="hud-item">
       <span class="hud-icon">🏆</span>
@@ -133,9 +123,7 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       المشهد الرئيسي (المحطة الشمسية)
-  ============================================================ -->
+  <!-- المشهد الرئيسي -->
   <div id="scene" class="hidden">
 
     <svg id="plantSVG" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet">
@@ -167,7 +155,6 @@
         </filter>
       </defs>
 
-      <!-- الشمس -->
       <g id="sunGroup" transform="translate(1050, 90)">
         <circle r="60" fill="url(#sunGlow)" class="sun-glow"/>
         <circle r="42" fill="url(#sunGrad)" filter="url(#glow)"/>
@@ -179,16 +166,13 @@
         <line x1="1050" y1="90" x2="800" y2="320"/>
       </g>
 
-      <!-- الأرض -->
       <rect x="0" y="520" width="1200" height="180" fill="#0a1a2e"/>
       <line x1="0" y1="520" x2="1200" y2="520" stroke="#2a5a8a" stroke-width="2"/>
 
-      <!-- 1) اللوحة الشمسية -->
       <g id="solarPanel" transform="translate(80, 240)">
         <line x1="140" y1="200" x2="140" y2="280" stroke="#2a5a8a" stroke-width="6"/>
         <line x1="60" y1="280" x2="220" y2="280" stroke="#2a5a8a" stroke-width="6"/>
         <rect x="0" y="0" width="280" height="200" rx="6" fill="url(#panelGrad)" stroke="#4a7fc4" stroke-width="3"/>
-
         <g id="solarCells" stroke="#5a9fe4" stroke-width="1" opacity="0.9">
           <rect x="10" y="10" width="60" height="40" fill="url(#cellGrad)"/>
           <rect x="75" y="10" width="60" height="40" fill="url(#cellGrad)"/>
@@ -207,15 +191,12 @@
           <rect x="140" y="145" width="60" height="40" fill="url(#cellGrad)"/>
           <rect x="205" y="145" width="65" height="40" fill="url(#cellGrad)"/>
         </g>
-
         <text x="140" y="230" text-anchor="middle" fill="#7ac0ff" font-size="14" font-family="monospace">SOLAR ARRAY</text>
       </g>
 
-      <!-- كابل DC 1 -->
       <path id="cable1" d="M 360 340 L 440 340" stroke="#c0392b" stroke-width="5" fill="none" stroke-linecap="round"/>
       <path id="cable2" d="M 360 355 L 440 355" stroke="#2c3e50" stroke-width="5" fill="none" stroke-linecap="round"/>
 
-      <!-- 2) صندوق التجميع -->
       <g id="combinerBox" transform="translate(440, 290)">
         <rect x="0" y="0" width="120" height="120" rx="8" fill="#1a3a5e" stroke="#4a7fc4" stroke-width="3"/>
         <text x="60" y="20" text-anchor="middle" fill="#7ac0ff" font-size="11" font-family="monospace">COMBINER</text>
@@ -232,7 +213,6 @@
 
       <path id="cable3" d="M 560 350 L 640 350" stroke="#c0392b" stroke-width="5" fill="none" stroke-linecap="round"/>
 
-      <!-- 3) منظم الشحن -->
       <g id="chargeController" transform="translate(640, 280)">
         <rect x="0" y="0" width="130" height="140" rx="8" fill="#1a3a5e" stroke="#4a7fc4" stroke-width="3"/>
         <text x="65" y="20" text-anchor="middle" fill="#7ac0ff" font-size="11" font-family="monospace">CHG CTRL</text>
@@ -247,7 +227,6 @@
 
       <path id="cable4" d="M 770 350 L 850 350" stroke="#c0392b" stroke-width="5" fill="none" stroke-linecap="round"/>
 
-      <!-- 4) البطارية -->
       <g id="battery" transform="translate(850, 260)">
         <rect x="0" y="0" width="100" height="180" rx="8" fill="#1a3a5e" stroke="#4a7fc4" stroke-width="3"/>
         <rect x="40" y="-10" width="20" height="15" fill="#6a9fd4" rx="3"/>
@@ -262,7 +241,6 @@
 
       <path id="cable5" d="M 950 350 L 1030 350" stroke="#c0392b" stroke-width="5" fill="none" stroke-linecap="round"/>
 
-      <!-- 5) العاكس -->
       <g id="inverter" transform="translate(1030, 280)">
         <rect x="0" y="0" width="130" height="140" rx="8" fill="#1a3a5e" stroke="#4a7fc4" stroke-width="3"/>
         <text x="65" y="20" text-anchor="middle" fill="#7ac0ff" font-size="11" font-family="monospace">INVERTER</text>
@@ -271,7 +249,6 @@
         <text x="65" y="125" text-anchor="middle" fill="#00cc66" font-size="10" font-family="monospace">50 Hz</text>
       </g>
 
-      <!-- 6) المنزل -->
       <g id="house" transform="translate(1050, 480)">
         <polygon points="50,0 0,50 100,50" fill="#8b3a3a" stroke="#5a2020" stroke-width="2"/>
         <rect x="10" y="50" width="80" height="70" fill="#2a5a8a" stroke="#1a3a5e" stroke-width="2"/>
@@ -280,10 +257,9 @@
         <rect x="67" y="60" width="15" height="15" fill="#ffe066" opacity="0.3" class="window-light"/>
         <text x="50" y="145" text-anchor="middle" fill="#7ac0ff" font-size="11" font-family="monospace">HOME</text>
       </g>
-
     </svg>
 
-    <!-- نقطة العطل على المشهد الكلي -->
+    <!-- نقطة العطل -->
     <div id="faultPoint" class="fault-point hidden">
       <div class="fault-ring"></div>
       <div class="fault-ring delay"></div>
@@ -291,9 +267,7 @@
       <div class="fault-halo"></div>
     </div>
 
-    <!-- ============================================================
-         نافذة الزووم (المشهد المقرّب) — تظهر عند التشخيص
-    ============================================================ -->
+    <!-- نافذة الزووم -->
     <div id="zoomView" class="zoom-view hidden">
       <div class="zoom-header">
         <div class="zoom-title">
@@ -303,9 +277,7 @@
         <button id="zoomCloseBtn" class="zoom-close">✕</button>
       </div>
 
-      <div class="zoom-canvas" id="zoomCanvas">
-        <!-- سيتم إنشاء SVG ديناميكياً هنا بواسطة JS -->
-      </div>
+      <div class="zoom-canvas" id="zoomCanvas"></div>
 
       <div class="zoom-info" id="zoomInfo">
         <div class="zoom-info-title">🔎 نتيجة الفحص:</div>
@@ -313,19 +285,13 @@
       </div>
     </div>
 
-    <!-- ============================================================
-         شريط الأدوات — يظهر أسفل الشاشة أثناء الفحص
-    ============================================================ -->
+    <!-- شريط الأدوات -->
     <div id="toolbar" class="toolbar hidden">
-      <div class="toolbar-title">🛠️ اسحب الأداة الصحيحة إلى العطل:</div>
-      <div class="toolbar-tools" id="toolbarTools">
-        <!-- يتم إنشاء الأدوات ديناميكياً -->
-      </div>
+      <div class="toolbar-title">🛠️ مرّر إصبعك فوق الأداة (ابقَ لحظة) ثم اسحبها للعطل:</div>
+      <div class="toolbar-tools" id="toolbarTools"></div>
     </div>
 
-    <!-- ============================================================
-         مؤشر الإصبع (يتحرك مع السبابة)
-    ============================================================ -->
+    <!-- مؤشر الإصبع -->
     <div id="fingerCursor" class="hidden">
       <svg class="cursor-svg" viewBox="0 0 100 100">
         <circle class="cursor-track" cx="50" cy="50" r="40"/>
@@ -344,20 +310,37 @@
 
   </div>
 
-  <!-- رسالة عائمة -->
-  <div id="toast" class="toast"></div>
+  <!-- بطاقة المعلومة التعليمية -->
+  <div id="factCard" class="fact-card hidden">
+    <div class="fact-header">
+      <span class="fact-badge">📚 معلومة هندسية</span>
+      <span class="fact-repaired">✅ تم الإصلاح</span>
+    </div>
+    <div class="fact-body">
+      <div class="fact-device" id="factDevice">SOLAR PANEL</div>
+      <div class="fact-title" id="factTitle">خلية شمسية مكسورة</div>
+      <div class="fact-divider"></div>
+      <div class="fact-icon-row">
+        <span class="fact-label">🔬 المعلومة:</span>
+      </div>
+      <p class="fact-text" id="factText">...</p>
+      <div class="fact-icon-row" style="margin-top: 12px;">
+        <span class="fact-label">💡 نصيحة وقائية:</span>
+      </div>
+      <p class="fact-tip" id="factTip">...</p>
+    </div>
+    <button id="factContinueBtn" class="btn-fact-continue">متابعة ←</button>
+  </div>
 
-  <!-- تأثير الجزيئات -->
+  <div id="toast" class="toast"></div>
   <canvas id="particles"></canvas>
 
-  <!-- شريط التعليمات -->
   <div id="hintBar" class="hint-bar hidden">
     👉 حرّك إصبع السبابة نحو <span style="color:#ff5757">نقطة العطل</span> وابقَ عليها ثانية
   </div>
 
 </div>
 
-<!-- ==================== ملف JavaScript ==================== -->
 <script src="script.js"></script>
 
 </body>
