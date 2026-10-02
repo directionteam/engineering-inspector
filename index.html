@@ -55,7 +55,7 @@
         <div class="sstep"><span>2</span> شاهد الفحص المقّرّب</div>
         <div class="sstep"><span>3</span> اسحب الأداة الصحيحة</div>
       </div>
-
+      <button id="startLeaderboardBtn" class="btn-secondary" style="margin-top: 14px;">🏆 شاهد المتصدرين</button>
       <p class="hint-small">يتطلب Chrome + كاميرا + اتصال HTTPS</p>
     </div>
   </div>
@@ -81,9 +81,22 @@
         </div>
       </div>
 
+      <div class="name-input-wrapper" id="nameInputWrapper">
+        <label for="playerName">أدخل اسمك للمتصدرين:</label>
+        <input
+          type="text"
+          id="playerName"
+          maxlength="15"
+          placeholder="اسمك..."
+          autocomplete="off"
+        />
+      </div>
+
       <div class="end-actions">
-        <button id="replayBtn" class="btn-primary">🔄 حاول مرة أخرى</button>
-        <button id="menuBtn" class="btn-secondary">🏠 القائمة الرئيسية</button>
+        <button id="saveScoreBtn" class="btn-primary">💾 حفظ النتيجة</button>
+        <button id="showLeaderboardBtn" class="btn-secondary">🏆 المتصدرون</button>
+        <button id="replayBtn" class="btn-secondary">🔄 حاول مرة أخرى</button>
+        <button id="menuBtn" class="btn-secondary">🏠 القائمة</button>
       </div>
     </div>
   </div>
@@ -120,6 +133,13 @@
         <div class="hud-label">Combo</div>
         <div class="hud-value" id="hudCombo">x1</div>
       </div>
+    </div>
+  </div>
+
+  <!-- شريط التقدم -->
+  <div class="hud-progress-wrapper">
+    <div class="hud-progress-bar">
+      <div class="hud-progress-fill" id="progressFill"></div>
     </div>
   </div>
 
@@ -301,6 +321,24 @@
       <div class="cursor-tool" id="cursorTool"></div>
     </div>
 
+    <!-- شخصية المهندس -->
+    <div id="engineerAvatar" class="engineer-avatar">
+      <div class="avatar-bubble" id="avatarBubble">جاهز؟</div>
+      <div class="avatar-body">
+        <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="40" cy="30" rx="22" ry="18" fill="#ffd93d" stroke="#cc9900" stroke-width="2"/>
+          <rect x="18" y="28" width="44" height="6" fill="#cc9900"/>
+          <circle cx="40" cy="42" r="18" fill="#f4c8a0" stroke="#b08560" stroke-width="1.5"/>
+          <circle cx="33" cy="40" r="2.5" fill="#1a1a1a"/>
+          <circle cx="47" cy="40" r="2.5" fill="#1a1a1a"/>
+          <path d="M 33 48 Q 40 54, 47 48" stroke="#1a1a1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M 20 65 L 60 65 L 65 100 L 15 100 Z" fill="#2a5a8a" stroke="#1a3a5e" stroke-width="2"/>
+          <rect x="20" y="75" width="40" height="4" fill="#ffe066"/>
+          <rect x="20" y="85" width="40" height="4" fill="#ffe066"/>
+        </svg>
+      </div>
+    </div>
+
     <!-- كاميرا مصغّرة -->
     <div id="camPreview">
       <video id="video" autoplay playsinline muted></video>
@@ -308,6 +346,20 @@
       <div class="cam-tag">● LIVE</div>
     </div>
 
+  </div>
+
+  <!-- نافذة المتصدرين -->
+  <div id="leaderboardScreen" class="screen hidden">
+    <div class="leaderboard-card">
+      <h1>🏆 المتصدرون</h1>
+      <p class="leaderboard-subtitle">أفضل 5 نتائج على هذا الجهاز</p>
+
+      <div class="leaderboard-list" id="leaderboardList"></div>
+
+      <div class="leaderboard-actions">
+        <button id="closeLeaderboardBtn" class="btn-primary">🎮 العب مرة أخرى</button>
+      </div>
+    </div>
   </div>
 
   <!-- بطاقة المعلومة التعليمية -->
