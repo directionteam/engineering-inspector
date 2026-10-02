@@ -1195,6 +1195,12 @@ function hideFactCard() {
   el.factCard.classList.remove('active');
   setTimeout(() => {
     el.factCard.classList.add('hidden');
+
+    // ▶️ استئناف المؤقت (فقط إذا كانت اللعبة لا تزال جارية)
+    if (Game.running && !Game.timerInterval) {
+      startTimer();
+    }
+
     showFault(Game.faultIndex + 1);
   }, 350);
 }
