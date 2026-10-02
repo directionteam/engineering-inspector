@@ -1175,6 +1175,10 @@ function shakeScene() {
    بطاقة المعلومة التعليمية
 ===================================================== */
 function showFactCard(fault) {
+  // ⏸️ أوقف المؤقت
+  clearInterval(Game.timerInterval);
+  Game.timerInterval = null;
+
   el.factDevice.textContent = fault.deviceName;
   el.factTitle.textContent = fault.title;
   el.factText.textContent = fault.fact || 'لم تُضف معلومة بعد.';
