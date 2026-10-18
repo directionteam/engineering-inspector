@@ -593,4 +593,969 @@ const Particles = {
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed - 1,
         life: 1,
-        decay: 0.012 + Math.random() * 0
+        decay: 0.012 + Math.random() * 0.015,
+        size: 2 + Math.random() * 4,
+        color,
+      });
+    }
+    this.startLoop();
+  },
+
+  startLoop() {
+    if (this.raf) return;
+    this.raf = requestAnimationFrame(() => this.loop());
+  },
+
+  loop() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.12;
+      p.vx *= 0.985;
+      p.life -= p.decay;
+
+      if (p.life <= 0) { this.particles.splice(i, 1); continue; }
+
+      this.ctx.save();
+      this.ctx.globalAlpha = p.life;
+      this.ctx.fillStyle = p.color;
+      this.ctx.shadowBlur = 12;
+      this.ctx.shadowColor = p.color;
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
+    }
+
+    if (this.particles.length > 0) this.raf = requestAnimationFrame(() => this.loop());
+    else { this.raf = null; this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
+  },
+};
+
+/* =====================================================
+   Toast
+===================================================== */
+function showToast(text, type = 'info', duration = 1800) {
+  el.toast.textContent = text;
+  el.toast.className = 'toast ' + type;
+  void el.toast.offsetWidth;
+  el.toast.classList.add('show');
+  clearTimeout(el.toast._timeout);
+  el.toast._timeout = setTimeout(() => el.toast.classList.remove('show'), duration);
+}
+
+/* =====================================================
+   فقاعة Avatar
+===================================================== */
+let avatarTimeout = null;
+function avatarSay(text, duration = 2500) {
+  el.avatarBubble.textContent = text;
+  el.avatarBubble.classList.add('show');
+  clearTimeout(avatarTimeout);
+  avatarTimeout = setTimeout(() => el.avatarBubble.classList.remove('show'), duration);
+}
+
+/* =====================================================
+   اختيار الصعوبة
+===================================================== */
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    Game.difficulty = btn.dataset.diff;
+    Game.config = DIFFICULTIES[Game.difficulty];
+    setTimeout(startGame, 300);
+  });
+});
+
+/* =====================================================
+   المتصدرون
+===================================================== */
+const Leaderboard = {
+  key: 'inspectorLeaderboardV4',
+
+  getAll() {
+    try {
+      const data = localStorage.getItem(this.key);
+      return data ? JSON.parse(data) : [];
+    } catch (e) { return []; }
+  },
+
+  save(name, score, fixed, total, stars) {
+    const all = this.getAll();
+    all.push({
+      name: name || 'مجهول',
+      score,
+      fixed,
+      total,
+      stars,
+      date: Date.now(),
+    });
+    all.sort((a, b) => b.score - a.score);
+    const top5 = all.slice(0, 5);
+    localStorage.setItem(this.key, JSON.stringify(top5));
+    return top5;
+  },
+
+  render() {
+    const list = this.getAll();
+    if (list.length === 0) {
+      el.leaderboardList.innerHTML = '<div class="leaderboard-empty">لا توجد نتائج محفوظة بعد.<br>كن أول المتصدرين!</div>';
+      return;
+    }
+
+    el.leaderboardList.innerHTML = list.map((entry, i) => {
+      const rank = i + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+      return `
+        <div class="leaderboard-row rank-${rank}">
+          <div class="rank-badge">${medal}</div>
+          <div class="leaderboard-name">${escapeHtml(entry.name)}</div>
+          <div class="leaderboard-score">${entry.score}</div>
+        </div>
+      `;
+    }).join('');
+  },
+};
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, s => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[s]));
+}
+
+function openLeaderboard() {
+  Leaderboard.render();
+  el.leaderboardScreen.classList.remove('hidden');
+}
+
+function closeLeaderboard() {
+  el.leaderboardScreen.classList.add('hidden');
+}
+
+el.closeLeaderboardBtn.addEventListener('click', () => {
+  closeLeaderboard();
+  el.startScreen.classList.remove('hidden');
+  el.scene.classList.add('hidden');
+  el.hud.classList.add('hidden');
+});
+
+el.startLeaderboardBtn.addEventListener('click', openLeaderboard);
+el.showLeaderboardBtn.addEventListener('click', openLeaderboard);
+
+el.saveScoreBtn.addEventListener('click', () => {
+  const name = (el.playerName.value || '').trim() || 'مجهول';
+  const stars = el.stars.textContent.split('⭐').length - 1;
+  Leaderboard.save(name, Game.score, Game.fixedFaults, Game.totalFaults, stars);
+
+  el.nameInputWrapper.classList.add('saved');
+  showToast('✅ تم حفظ النتيجة!', 'success', 1500);
+
+  setTimeout(() => {
+    openLeaderboard();
+  }, 800);
+});
+
+/* =====================================================
+   بدء اللعبة
+===================================================== */
+async function startGame() {
+  Sound.init();
+
+  el.startScreen.classList.add('hidden');
+  el.endScreen.classList.add('hidden');
+  el.leaderboardScreen.classList.add('hidden');
+  el.scene.classList.remove('hidden');
+  el.hud.classList.remove('hidden');
+  el.hintBar.classList.remove('hidden');
+
+  Game.running = true;
+  Game.score = 0;
+  Game.combo = 0;
+  Game.maxCombo = 0;
+  Game.totalFaults = Game.config.faults;
+  Game.timeLeft = Game.config.faults * Game.config.timePerFault;
+  Game.fixedFaults = 0;
+  Game.faultIndex = 0;
+  Game.faultActive = false;
+  Game.faultDiagnosed = false;
+  Game.faultFixed = false;
+  Game.holdingTool = null;
+  Game.toolbarVisible = false;
+  Game.usedFaults = [];
+  Game.lastFaultId = null;
+  Game.factBtnHoverStart = 0;
+  Game.timeWarnActive = false;
+
+  el.hudScore.textContent = '0';
+  el.hudTime.textContent = Game.timeLeft;
+  el.hudTime.classList.remove('warning');
+  el.hudFaults.textContent = `1 / ${Game.totalFaults}`;
+  el.comboBox.classList.add('hidden');
+  el.cursorTool.textContent = '';
+  el.factCard.classList.add('hidden');
+  el.factCard.classList.remove('active');
+  el.progressFill.style.width = '0%';
+  el.nameInputWrapper.classList.remove('saved');
+  el.app.classList.remove('time-warning', 'time-critical');
+
+  const handsReady = await initHands();
+  if (handsReady) await startCamera();
+
+  startTimer();
+
+  avatarSay('هيا نبدأ! 👷', 3000);
+
+  setTimeout(() => {
+    showFault(0);
+    showToast('🎯 ابحث عن العطل الأول', 'info', 2200);
+  }, 700);
+
+  Sound.start();
+}
+
+/* =====================================================
+   عرض العطل
+===================================================== */
+function showFault(index) {
+  if (index >= Game.totalFaults) { endGame(true); return; }
+
+  let pool = [];
+  if (Game.lastFaultId) {
+    const last = FAULTS.find(f => f.id === Game.lastFaultId);
+    if (last && last.next) {
+      pool = last.next
+        .map(id => FAULTS.find(f => f.id === id))
+        .filter(f => f && !Game.usedFaults.includes(f.id));
+    }
+  }
+
+  if (pool.length === 0) {
+    pool = FAULTS.filter(f => !Game.usedFaults.includes(f.id));
+  }
+
+  if (pool.length === 0) {
+    Game.usedFaults = [];
+    pool = FAULTS.slice();
+  }
+
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  Game.usedFaults.push(chosen.id);
+  Game.lastFaultId = chosen.id;
+
+  Game.faultIndex = index;
+  Game.currentFault = chosen;
+  Game.faultActive = true;
+  Game.faultDiagnosed = false;
+  Game.faultFixed = false;
+
+  const sceneRect = el.scene.getBoundingClientRect();
+  const fx = (chosen.pos.x / 100) * sceneRect.width;
+  const fy = (chosen.pos.y / 100) * sceneRect.height;
+
+  el.faultPoint.style.left = fx + 'px';
+  el.faultPoint.style.top = fy + 'px';
+  el.faultPoint.classList.remove('hidden', 'fixed');
+
+  el.hudFaults.textContent = `${index + 1} / ${Game.totalFaults}`;
+
+  Game.faultScreenX = fx;
+  Game.faultScreenY = fy;
+
+  Sound.tick();
+
+  clearTimeout(Game.hintTimeout);
+  Game.hintTimeout = setTimeout(() => {
+    if (!Game.faultDiagnosed) {
+      showToast('💡 قرّب إصبعك أكثر من النقطة الحمراء', 'info', 3000);
+    }
+  }, 15000);
+}
+
+/* =====================================================
+   Hover على العطل
+===================================================== */
+function checkHover(x, y) {
+  if (!Game.faultActive || Game.faultFixed || Game.faultDiagnosed) return;
+
+  const dx = x - Game.faultScreenX;
+  const dy = y - Game.faultScreenY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const inside = dist < 80;
+
+  if (inside) {
+    if (!Game.hoverStart) {
+      Game.hoverStart = performance.now();
+      Sound.ping();
+    }
+    const elapsed = performance.now() - Game.hoverStart;
+    const progress = Math.min(elapsed / Game.hoverDuration, 1);
+    const circumference = 2 * Math.PI * 40;
+    el.cursorProgress.style.strokeDashoffset = circumference * (1 - progress);
+    el.fingerCursor.classList.add('locked');
+
+    if (!Game.targetLocked && progress > 0.15) {
+      Game.targetLocked = true;
+      Sound.lock();
+    }
+
+    if (elapsed >= Game.hoverDuration) diagnoseFault();
+  } else {
+    Game.hoverStart = 0;
+    Game.targetLocked = false;
+    el.cursorProgress.style.strokeDashoffset = 251.2;
+    el.fingerCursor.classList.remove('locked');
+  }
+}
+
+/* =====================================================
+   التشخيص
+===================================================== */
+function diagnoseFault() {
+  if (Game.faultDiagnosed) return;
+  Game.faultDiagnosed = true;
+  Game.faultActive = false;
+
+  Sound.diagnose();
+  clearTimeout(Game.hintTimeout);
+
+  el.cursorProgress.style.strokeDashoffset = 251.2;
+  el.fingerCursor.classList.remove('locked');
+
+  const fault = Game.currentFault;
+
+  el.zoomDeviceName.textContent = fault.deviceName;
+  el.zoomCanvas.innerHTML = fault.renderZoom();
+  el.zoomInfoText.textContent = fault.info;
+
+  el.zoomView.classList.remove('hidden');
+  setTimeout(() => el.zoomView.classList.add('active'), 30);
+
+  prepareToolbar(fault);
+
+  el.toolbar.classList.remove('hidden');
+  Game.toolbarVisible = true;
+
+  el.hintBar.innerHTML = '🖐️ مرّر إصبعك فوق الأداة الصحيحة (ابقَ عليها لحظة)';
+
+  showToast('🔍 تم التشخيص — اختر الأداة', 'info', 2000);
+  avatarSay('اختر الأداة المناسبة! 🔧', 3000);
+}
+
+/* =====================================================
+   شريط الأدوات
+===================================================== */
+function prepareToolbar(fault) {
+  el.toolbarTools.innerHTML = '';
+  el.cursorTool.textContent = '';
+
+  const correct = fault.tools.find(t => t.correct);
+  const wrongs = fault.tools.filter(t => !t.correct);
+  const numWrong = Game.config.wrongTools;
+  const shuffledWrongs = wrongs.sort(() => Math.random() - 0.5).slice(0, numWrong);
+  const toolsToShow = [correct, ...shuffledWrongs].sort(() => Math.random() - 0.5);
+
+  toolsToShow.forEach(tool => {
+    const btn = document.createElement('div');
+    btn.className = 'tool-item';
+    btn.dataset.toolId = tool.id;
+    btn.dataset.correct = tool.correct ? '1' : '0';
+    btn.innerHTML = `
+      <span class="tool-icon">${tool.icon}</span>
+      <span class="tool-name">${tool.name}</span>
+    `;
+
+    btn.addEventListener('mousedown', (e) => {
+      if (Game.faultFixed) return;
+      e.preventDefault();
+      pickTool(tool, btn);
+    });
+
+    btn.addEventListener('touchstart', (e) => {
+      if (Game.faultFixed) return;
+      e.preventDefault();
+      pickTool(tool, btn);
+    }, { passive: false });
+
+    el.toolbarTools.appendChild(btn);
+  });
+}
+
+/* =====================================================
+   اختيار الأداة
+===================================================== */
+function pickTool(tool, btnEl) {
+  if (Game.faultFixed || Game.holdingTool) return;
+
+  Game.holdingTool = tool;
+  el.cursorTool.textContent = tool.icon;
+  el.fingerCursor.classList.add('holding');
+  btnEl.classList.add('picked');
+
+  Sound.grabTool(tool.id);
+  showToast(`✋ أمسكت: ${tool.name}`, 'info', 1200);
+}
+
+/* =====================================================
+   Hover الأداة بالإصبع
+===================================================== */
+let toolHoverTimer = null;
+let toolHoverTarget = null;
+
+function checkToolHover(x, y) {
+  if (Game.holdingTool) return;
+
+  const buttons = el.toolbarTools.querySelectorAll('.tool-item');
+  let hoveredBtn = null;
+
+  buttons.forEach(btn => {
+    if (btn.classList.contains('picked')) return;
+    const r = btn.getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+      hoveredBtn = btn;
+    }
+  });
+
+  if (hoveredBtn !== toolHoverTarget) {
+    clearTimeout(toolHoverTimer);
+    toolHoverTarget = hoveredBtn;
+
+    buttons.forEach(b => {
+      b.style.transform = '';
+      b.style.borderColor = '';
+      b.style.boxShadow = '';
+    });
+
+    if (hoveredBtn) {
+      hoveredBtn.style.transform = 'translateY(-6px) scale(1.05)';
+      hoveredBtn.style.borderColor = '#ffe066';
+      hoveredBtn.style.boxShadow = '0 0 25px rgba(255,217,61,0.7)';
+
+      toolHoverTimer = setTimeout(() => {
+        if (toolHoverTarget === hoveredBtn && !Game.holdingTool) {
+          const toolId = hoveredBtn.dataset.toolId;
+          const tool = Game.currentFault.tools.find(t => t.id === toolId);
+          if (tool) {
+            pickTool(tool, hoveredBtn);
+            hoveredBtn.style.transform = '';
+            hoveredBtn.style.borderColor = '';
+            hoveredBtn.style.boxShadow = '';
+          }
+        }
+      }, 400);
+    }
+  }
+}
+
+/* =====================================================
+   إفلات الأداة
+===================================================== */
+let dropTimer = null;
+
+function checkDropWithDelay(x, y) {
+  const zoomRect = el.zoomCanvas.getBoundingClientRect();
+  const insideZoom =
+    x >= zoomRect.left && x <= zoomRect.right &&
+    y >= zoomRect.top && y <= zoomRect.bottom;
+
+  if (!insideZoom) {
+    clearTimeout(dropTimer);
+    dropTimer = null;
+    return;
+  }
+
+  const vbX = ((x - zoomRect.left) / zoomRect.width) * 800;
+  const vbY = ((y - zoomRect.top) / zoomRect.height) * 400;
+
+  const zone = Game.currentFault.targetZone;
+  const inZone =
+    vbX >= zone.x - zone.w / 2 && vbX <= zone.x + zone.w / 2 &&
+    vbY >= zone.y - zone.h / 2 && vbY <= zone.y + zone.h / 2;
+
+  if (inZone && !dropTimer) {
+    dropTimer = setTimeout(() => {
+      if (Game.holdingTool) tryDropTool(x, y);
+      dropTimer = null;
+    }, 600);
+  } else if (!inZone) {
+    clearTimeout(dropTimer);
+    dropTimer = null;
+  }
+}
+
+function tryDropTool(x, y) {
+  if (!Game.holdingTool || Game.faultFixed) return;
+
+  const zoomRect = el.zoomCanvas.getBoundingClientRect();
+  const insideZoom =
+    x >= zoomRect.left && x <= zoomRect.right &&
+    y >= zoomRect.top && y <= zoomRect.bottom;
+
+  if (!insideZoom) return;
+
+  const vbX = ((x - zoomRect.left) / zoomRect.width) * 800;
+  const vbY = ((y - zoomRect.top) / zoomRect.height) * 400;
+
+  const zone = Game.currentFault.targetZone;
+  const inZone =
+    vbX >= zone.x - zone.w / 2 && vbX <= zone.x + zone.w / 2 &&
+    vbY >= zone.y - zone.h / 2 && vbY <= zone.y + zone.h / 2;
+
+  const tool = Game.holdingTool;
+  const toolEl = el.toolbarTools.querySelector(`[data-tool-id="${tool.id}"]`);
+
+  if (tool.correct && inZone) {
+    applyRepair(x, y);
+  } else if (!tool.correct && inZone) {
+    wrongToolAttempt(toolEl);
+  } else {
+    showToast('❌ أفلت الأداة فوق الجزء المعطوب', 'error', 1500);
+    releaseTool();
+  }
+}
+
+function wrongToolAttempt(toolEl) {
+  Sound.wrongTool();
+  shakeScene();
+  showToast('❌ أداة خاطئة! قد تسبب ضرراً', 'error', 1800);
+
+  if (toolEl) toolEl.classList.add('wrong-pick');
+  setTimeout(() => {
+    if (toolEl) toolEl.classList.remove('wrong-pick');
+  }, 500);
+
+  Game.score = Math.max(0, Game.score - 20);
+  el.hudScore.textContent = Game.score;
+
+  avatarSay('أداة خاطئة! جرب غيرها 😅', 2500);
+
+  releaseTool();
+}
+
+function releaseTool() {
+  if (!Game.holdingTool) return;
+  const toolEl = el.toolbarTools.querySelector(`[data-tool-id="${Game.holdingTool.id}"]`);
+  if (toolEl) toolEl.classList.remove('picked');
+  Game.holdingTool = null;
+  el.cursorTool.textContent = '';
+  el.fingerCursor.classList.remove('holding');
+
+  clearTimeout(toolHoverTimer);
+  toolHoverTarget = null;
+  el.toolbarTools.querySelectorAll('.tool-item').forEach(b => {
+    b.style.transform = '';
+    b.style.borderColor = '';
+    b.style.boxShadow = '';
+  });
+}
+
+/* =====================================================
+   تطبيق الإصلاح
+===================================================== */
+function applyRepair(x, y) {
+  Game.faultFixed = true;
+  Game.toolbarVisible = false;
+  const fault = Game.currentFault;
+
+  Sound.faultSound(fault.id);
+  Particles.burst(x, y, '#00ff88', 60);
+
+  const base = 100;
+  const speedBonus = Math.floor(Math.random() * 30) + 20;
+  Game.combo++;
+  Game.maxCombo = Math.max(Game.maxCombo, Game.combo);
+  const multiplier = Math.min(Game.combo, 5);
+  const total = (base + speedBonus) * multiplier;
+  Game.score += total;
+  el.hudScore.textContent = Game.score;
+
+  if (Game.combo > 1) {
+    el.comboBox.classList.remove('hidden');
+    el.hudCombo.textContent = 'x' + Game.combo;
+  }
+
+  showToast(`✅ +${total} نقطة!`, 'success', 1800);
+
+  updateProgress();
+  releaseTool();
+  flashZoom();
+  Game.fixedFaults++;
+
+  avatarSay('أحسنت! 💪', 2000);
+
+  setTimeout(() => {
+    el.zoomView.classList.remove('active');
+    setTimeout(() => {
+      el.zoomView.classList.add('hidden');
+      el.toolbar.classList.add('hidden');
+      el.faultPoint.classList.add('fixed');
+      el.hintBar.innerHTML = '👉 حرّك إصبع السبابة نحو <span style="color:#ff5757">نقطة العطل</span> وابقَ عليها ثانية';
+
+      document.querySelectorAll('.window-light').forEach(w => w.classList.add('on'));
+
+      showFactCard(fault);
+    }, 350);
+  }, 900);
+}
+
+function updateProgress() {
+  const percent = (Game.fixedFaults / Game.totalFaults) * 100;
+  el.progressFill.style.width = percent + '%';
+}
+
+function flashZoom() {
+  let count = 0;
+  const iv = setInterval(() => {
+    el.zoomCanvas.style.filter = count % 2 === 0 ? 'brightness(1.5)' : 'brightness(1)';
+    count++;
+    if (count > 5) {
+      clearInterval(iv);
+      el.zoomCanvas.style.filter = 'brightness(1)';
+    }
+  }, 100);
+}
+
+function shakeScene() {
+  el.scene.classList.add('shake');
+  setTimeout(() => el.scene.classList.remove('shake'), 400);
+}
+
+/* =====================================================
+   بطاقة المعلومة
+===================================================== */
+function showFactCard(fault) {
+  clearInterval(Game.timerInterval);
+  Game.timerInterval = null;
+
+  el.factDevice.textContent = fault.deviceName;
+  el.factTitle.textContent = fault.title;
+  el.factText.textContent = fault.fact || 'لم تُضف معلومة بعد.';
+  el.factTip.textContent = fault.tip || 'لم تُضف نصيحة بعد.';
+
+  el.factCard.classList.remove('hidden');
+  setTimeout(() => el.factCard.classList.add('active'), 30);
+
+  Sound.factAppear();
+  Game.factBtnHoverStart = 0;
+}
+
+function hideFactCard() {
+  el.factCard.classList.remove('active');
+  setTimeout(() => {
+    el.factCard.classList.add('hidden');
+
+    if (Game.running && !Game.timerInterval) {
+      startTimer();
+    }
+
+    showFault(Game.faultIndex + 1);
+  }, 350);
+}
+
+el.factContinueBtn.addEventListener('click', () => {
+  Sound.tone(1200, 0.1, 'square', 0.08);
+  hideFactCard();
+});
+
+/* =====================================================
+   إغلاق الزووم
+===================================================== */
+el.zoomCloseBtn.addEventListener('click', () => {
+  if (Game.faultFixed) return;
+  el.zoomView.classList.remove('active');
+  setTimeout(() => el.zoomView.classList.add('hidden'), 300);
+  el.toolbar.classList.add('hidden');
+  Game.toolbarVisible = false;
+  releaseTool();
+  Game.faultDiagnosed = false;
+  Game.faultActive = true;
+  Game.hoverStart = 0;
+});
+
+/* =====================================================
+   المؤقت + وميض الوقت
+===================================================== */
+function startTimer() {
+  clearInterval(Game.timerInterval);
+  Game.timerInterval = setInterval(() => {
+    if (!Game.running) return;
+    Game.timeLeft--;
+    el.hudTime.textContent = Game.timeLeft;
+
+    if (Game.timeLeft <= 10) {
+      el.hudTime.classList.add('warning');
+      if (Game.timeLeft > 0) Sound.tick();
+
+      if (Game.timeLeft <= 5) {
+        el.app.classList.add('time-warning');
+        if (Game.timeLeft <= 3) {
+          el.app.classList.add('time-critical');
+        }
+      }
+    }
+
+    if (Game.timeLeft <= 0) {
+      clearInterval(Game.timerInterval);
+      endGame(false);
+    }
+  }, 1000);
+}
+
+/* =====================================================
+   نهاية اللعبة
+===================================================== */
+function endGame(won) {
+  Game.running = false;
+  clearInterval(Game.timerInterval);
+  clearTimeout(Game.hintTimeout);
+
+  el.hud.classList.add('hidden');
+  el.hintBar.classList.add('hidden');
+  el.fingerCursor.classList.remove('visible');
+  el.zoomView.classList.add('hidden');
+  el.toolbar.classList.add('hidden');
+  el.faultPoint.classList.add('hidden');
+  el.factCard.classList.add('hidden');
+  el.factCard.classList.remove('active');
+  el.app.classList.remove('time-warning', 'time-critical');
+
+  if (Game.score > Game.bestScore) {
+    Game.bestScore = Game.score;
+    localStorage.setItem('inspectorBestScoreV4', Game.bestScore.toString());
+  }
+
+  const stars = calculateStars(Game.score, won);
+
+  el.endTitle.textContent = won ? '🎉 مهمة ناجحة!' : '⏰ انتهى الوقت!';
+  el.stars.textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
+  el.finalScore.textContent = Game.score;
+  el.finalFixed.textContent = `${Game.fixedFaults} / ${Game.totalFaults}`;
+  el.bestScore.textContent = Game.bestScore;
+
+  el.endScreen.classList.remove('hidden');
+
+  Sound.end();
+  avatarSay('انتهت المهمة! 🏁', 3000);
+
+  for (let i = 0; i < 6; i++) {
+    setTimeout(() => {
+      Particles.burst(
+        Math.random() * window.innerWidth,
+        Math.random() * window.innerHeight * 0.5,
+        ['#ffe066', '#00ff88', '#7ac0ff'][i % 3],
+        40
+      );
+    }, i * 180);
+  }
+}
+
+function calculateStars(score, won) {
+  if (!won && Game.fixedFaults === 0) return 1;
+  if (score >= 800) return 5;
+  if (score >= 600) return 4;
+  if (score >= 400) return 3;
+  if (score >= 200) return 2;
+  return 1;
+}
+
+/* =====================================================
+   MediaPipe
+===================================================== */
+async function initHands() {
+  if (typeof Hands === 'undefined') {
+    console.error('MediaPipe Hands غير محمّل');
+    return false;
+  }
+
+  Game.hands = new Hands({
+    locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`,
+  });
+
+  Game.hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 0,
+    minDetectionConfidence: 0.6,
+    minTrackingConfidence: 0.6,
+    selfieMode: false,
+  });
+
+  Game.hands.onResults(onHandsResults);
+  return true;
+}
+
+async function startCamera() {
+  if (typeof Camera === 'undefined') return false;
+  Game.camera = new Camera(el.video, {
+    onFrame: async () => {
+      if (Game.hands) await Game.hands.send({ image: el.video });
+    },
+    width: 640,
+    height: 480,
+  });
+  try {
+    await Game.camera.start();
+    return true;
+  } catch (e) {
+    console.error('فشل الكاميرا', e);
+    showToast('⚠ سيعمل المؤشر بالماوس', 'error', 3000);
+    return false;
+  }
+}
+
+/* =====================================================
+   معالجة الإصبع
+===================================================== */
+function onHandsResults(results) {
+  if (el.camCanvas) {
+    el.camCanvas.width = el.camCanvas.clientWidth;
+    el.camCanvas.height = el.camCanvas.clientHeight;
+    const ctx = el.camCanvas.getContext('2d');
+    ctx.save();
+    ctx.clearRect(0, 0, el.camCanvas.width, el.camCanvas.height);
+    if (results.image) ctx.drawImage(results.image, 0, 0, el.camCanvas.width, el.camCanvas.height);
+    ctx.restore();
+  }
+
+  if (!Game.running) return;
+
+  if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+    Game.fingerActive = false;
+    el.fingerCursor.classList.remove('visible');
+    return;
+  }
+
+  const tip = results.multiHandLandmarks[0][8];
+  const x = (1 - tip.x) * window.innerWidth;
+  const y = tip.y * window.innerHeight;
+
+  Game.fingerActive = true;
+  Game.fingerX = x;
+  Game.fingerY = y;
+
+  el.fingerCursor.classList.remove('hidden');
+  el.fingerCursor.classList.add('visible');
+  el.fingerCursor.style.left = x + 'px';
+  el.fingerCursor.style.top = y + 'px';
+
+  if (el.factCard.classList.contains('active')) {
+    handleFactButtonHover(x, y);
+    return;
+  }
+
+  if (Game.holdingTool) {
+    checkDropWithDelay(x, y);
+  } else if (Game.toolbarVisible && Game.faultDiagnosed && !Game.faultFixed) {
+    checkToolHover(x, y);
+  } else {
+    checkHover(x, y);
+  }
+}
+
+function handleFactButtonHover(x, y) {
+  const btnRect = el.factContinueBtn.getBoundingClientRect();
+  const onBtn =
+    x >= btnRect.left && x <= btnRect.right &&
+    y >= btnRect.top && y <= btnRect.bottom;
+
+  if (onBtn) {
+    if (!Game.factBtnHoverStart) Game.factBtnHoverStart = performance.now();
+    const elapsed = performance.now() - Game.factBtnHoverStart;
+    if (elapsed >= 600) {
+      Game.factBtnHoverStart = 0;
+      el.factContinueBtn.click();
+    }
+  } else {
+    Game.factBtnHoverStart = 0;
+  }
+}
+
+/* =====================================================
+   دعم الماوس
+===================================================== */
+document.addEventListener('mousemove', (e) => {
+  if (!Game.running || Game.fingerActive) return;
+
+  el.fingerCursor.classList.remove('hidden');
+  el.fingerCursor.classList.add('visible');
+  el.fingerCursor.style.left = e.clientX + 'px';
+  el.fingerCursor.style.top = e.clientY + 'px';
+
+  if (el.factCard.classList.contains('active')) {
+    handleFactButtonHover(e.clientX, e.clientY);
+    return;
+  }
+
+  if (Game.holdingTool) {
+    checkDropWithDelay(e.clientX, e.clientY);
+  } else if (Game.toolbarVisible && Game.faultDiagnosed && !Game.faultFixed) {
+    checkToolHover(e.clientX, e.clientY);
+  } else {
+    checkHover(e.clientX, e.clientY);
+  }
+});
+
+document.addEventListener('mouseup', (e) => {
+  if (!Game.running || Game.fingerActive) return;
+  if (Game.holdingTool) tryDropTool(e.clientX, e.clientY);
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (!Game.running || Game.fingerActive) return;
+  const t = e.touches[0];
+  el.fingerCursor.classList.remove('hidden');
+  el.fingerCursor.classList.add('visible');
+  el.fingerCursor.style.left = t.clientX + 'px';
+  el.fingerCursor.style.top = t.clientY + 'px';
+
+  if (el.factCard.classList.contains('active')) {
+    handleFactButtonHover(t.clientX, t.clientY);
+    return;
+  }
+
+  if (Game.holdingTool) {
+    checkDropWithDelay(t.clientX, t.clientY);
+  } else if (Game.toolbarVisible && Game.faultDiagnosed && !Game.faultFixed) {
+    checkToolHover(t.clientX, t.clientY);
+  } else {
+    checkHover(t.clientX, t.clientY);
+  }
+}, { passive: true });
+
+/* =====================================================
+   أزرار النهاية
+===================================================== */
+el.replayBtn.addEventListener('click', () => {
+  el.endScreen.classList.add('hidden');
+  startGame();
+});
+
+el.menuBtn.addEventListener('click', () => {
+  el.endScreen.classList.add('hidden');
+  el.startScreen.classList.remove('hidden');
+  el.scene.classList.add('hidden');
+  el.hud.classList.add('hidden');
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+});
+
+/* =====================================================
+   تغيير حجم النافذة
+===================================================== */
+window.addEventListener('resize', () => {
+  if (Game.faultActive && Game.currentFault && !Game.faultFixed) {
+    const sceneRect = el.scene.getBoundingClientRect();
+    Game.faultScreenX = (Game.currentFault.pos.x / 100) * sceneRect.width;
+    Game.faultScreenY = (Game.currentFault.pos.y / 100) * sceneRect.height;
+    el.faultPoint.style.left = Game.faultScreenX + 'px';
+    el.faultPoint.style.top = Game.faultScreenY + 'px';
+  }
+});
+
+/* =====================================================
+   التهيئة
+===================================================== */
+Particles.init();
+el.bestScore.textContent = Game.bestScore;
+
+console.log('%c🏗️ المهندس الفاحص v4 - ULTIMATE', 'color:#ffe066;font-size:20px;font-weight:900;');
