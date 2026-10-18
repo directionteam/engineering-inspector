@@ -15,6 +15,83 @@ const DIFFICULTIES = {
    next: مصفوفة الأعطال التي يُفضّل أن تليها (منطقياً)
 ===================================================== */
 const FAULTS = [
+   /* =====================================================
+   أعطال مستوى الخبير (هندسية بحتة)
+   ===================================================== */
+const EXPERT_FAULTS = [
+  {
+    id: 'expert_wire_gauge',
+    deviceName: 'POWER CABLE',
+    title: 'احتراق الكابل الرئيسي',
+    info: 'تيار الحمل 50 أمبير. الكابل الحالي 4mm² (يتحمل 25A فقط). مطلوب استبدال الكابل.',
+    fact: 'قانون أوم وقدرة الكابل: الكابل 4mm² لا يتحمل أكثر من 25A. لتيار 50A نحتاج كابل 10mm² على الأقل.',
+    tip: 'دائماً اختر مقطع الكابل بناءً على أقصى تيار متوقع + هامش أمان 25%.',
+    pos: { x: 33, y: 50 },
+    targetZone: { x: 400, y: 180, w: 300, h: 220 },
+    tools: [
+      { id: 'cable_4',  name: 'كابل 4mm² (25A)', icon: '🔌', correct: false },
+      { id: 'cable_10', name: 'كابل 10mm² (60A)', icon: '🔌', correct: true },
+      { id: 'cable_2',  name: 'كابل 2mm² (15A)', icon: '🔌', correct: false },
+      { id: 'tape',     name: 'شريط عازل',        icon: '📏', correct: false },
+    ],
+    next: ['expert_fuse_rating'],
+    renderZoom: renderCableCut,
+  },
+  {
+    id: 'expert_fuse_rating',
+    deviceName: 'FUSE BOX',
+    title: 'اختيار فيوز خاطئ',
+    info: 'الفيوز احترق. الحمل الأقصى للدائرة هو 30A. تم تركيب فيوز 15A سابقاً.',
+    fact: 'الفيوز يجب أن يكون أعلى بقليل من تيار الحمل (30A). الفيوز 15A سيحترق فوراً، والفيوز 50A سيدمر الأجهزة.',
+    tip: 'اختر فيوزاً بسعة 30A أو 35A (أعلى بـ 10-20% من الحمل الأقصى).',
+    pos: { x: 42, y: 48 },
+    targetZone: { x: 400, y: 230, w: 240, h: 220 },
+    tools: [
+      { id: 'fuse_15', name: 'فيوز 15A', icon: '🛡️', correct: false },
+      { id: 'fuse_30', name: 'فيوز 30A', icon: '🛡️', correct: true },
+      { id: 'fuse_50', name: 'فيوز 50A', icon: '⚡', correct: false },
+      { id: 'wire',    name: 'سلك نحاسي', icon: '➰', correct: false },
+    ],
+    next: ['expert_voltage_drop'],
+    renderZoom: renderFuseBlown,
+  },
+  {
+    id: 'expert_voltage_drop',
+    deviceName: 'CHARGE CONTROLLER',
+    title: 'انهيار جهد الشحن',
+    info: 'البطارية (12V) لا تشحن. جهد اللوحة الشمسية 18V، والكابل طويل جداً (20 متر). الجهد الواصل للمنظم 11V فقط.',
+    fact: 'هبوط الجهد (Voltage Drop) بسبب طول الكابل يمنع الشحن. الحل هو استخدام كابل أسمك أو تقصير المسافة.',
+    tip: 'في الأنظمة الشمسية، لا تتجاوز نسبة هبوط الجهد 3%. استخدم كابلات أسمك للمسافات الطويلة.',
+    pos: { x: 58, y: 47 },
+    targetZone: { x: 400, y: 190, w: 340, h: 220 },
+    tools: [
+      { id: 'reset',     name: 'إعادة تشغيل', icon: '🔄', correct: false },
+      { id: 'cable_thick', name: 'كابل أسمك (6mm²)', icon: '🔌', correct: true },
+      { id: 'add_panel', name: 'إضافة لوحة شمسية', icon: '☀️', correct: false },
+      { id: 'water',     name: 'تبريد المنظم', icon: '💧', correct: false },
+    ],
+    next: ['expert_phase_issue'],
+    renderZoom: renderControllerFail,
+  },
+  {
+    id: 'expert_phase_issue',
+    deviceName: 'INVERTER',
+    title: 'تردد العاكس غير مطابق',
+    info: 'العاكس يعمل، لكن الأجهزة الحساسة لا تعمل. تردد الخرج 60Hz، لكن الشبكة تتطلب 50Hz.',
+    fact: 'بعض الأجهزة (خاصة المحركات والمكيفات) حساسة للتردد. تردد 60Hz في شبكة 50Hz يسبب خللاً في الدوران.',
+    tip: 'تأكد دائماً من مطابقة التردد (50Hz) والجهد (220V) مع متطلبات البلد.',
+    pos: { x: 91, y: 48 },
+    targetZone: { x: 400, y: 200, w: 420, h: 240 },
+    tools: [
+      { id: 'inverter_50hz', name: 'عاكس 220V 50Hz', icon: '🔀', correct: true },
+      { id: 'inverter_60hz', name: 'عاكس 220V 60Hz', icon: '🔀', correct: false },
+      { id: 'transformer',   name: 'محول رافع للجهد', icon: '⚡', correct: false },
+      { id: 'fan',           name: 'مروحة تبريد', icon: '🌀', correct: false },
+    ],
+    next: ['expert_wire_gauge'],
+    renderZoom: renderInverterBurn,
+  },
+];
   {
     id: 'solar_crack',
     deviceName: 'SOLAR PANEL',
@@ -817,27 +894,27 @@ async function startGame() {
 function showFault(index) {
   if (index >= Game.totalFaults) { endGame(true); return; }
 
-  // اختر العطل التالي بناءً على "next" من العطل السابق
+  // 🌟 تحديد مصدر الأعطال: خبير أم عادي؟
+  const isExpert = (Game.difficulty === 'expert');
+  const faultSource = isExpert ? EXPERT_FAULTS : FAULTS;
+
   let pool = [];
   if (Game.lastFaultId) {
-    const last = FAULTS.find(f => f.id === Game.lastFaultId);
+    const last = faultSource.find(f => f.id === Game.lastFaultId);
     if (last && last.next) {
-      // رشّح الأعطال من next التي لم تُستخدم
       pool = last.next
-        .map(id => FAULTS.find(f => f.id === id))
+        .map(id => faultSource.find(f => f.id === id))
         .filter(f => f && !Game.usedFaults.includes(f.id));
     }
   }
 
-  // إذا لم نجد مرشحين من التسلسل، استخدم أي عطل غير مستخدم
   if (pool.length === 0) {
-    pool = FAULTS.filter(f => !Game.usedFaults.includes(f.id));
+    pool = faultSource.filter(f => !Game.usedFaults.includes(f.id));
   }
 
-  // إذا استُنفدت كل الأعطال، أعد التصفير
   if (pool.length === 0) {
     Game.usedFaults = [];
-    pool = FAULTS.slice();
+    pool = faultSource.slice();
   }
 
   const chosen = pool[Math.floor(Math.random() * pool.length)];
@@ -872,7 +949,6 @@ function showFault(index) {
     }
   }, 15000);
 }
-
 /* =====================================================
    Hover على العطل
 ===================================================== */
@@ -961,9 +1037,10 @@ function prepareToolbar(fault) {
     btn.className = 'tool-item';
     btn.dataset.toolId = tool.id;
     btn.dataset.correct = tool.correct ? '1' : '0';
+      const isExpertMode = Game.difficulty === 'expert';
     btn.innerHTML = `
       <span class="tool-icon">${tool.icon}</span>
-      <span class="tool-name">${tool.name}</span>
+      <span class="tool-name" style="${isExpertMode ? 'color:#ffe066;font-weight:900;' : ''}">${tool.name}</span>
     `;
 
     btn.addEventListener('mousedown', (e) => {
