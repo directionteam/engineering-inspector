@@ -1,25 +1,24 @@
 /* =====================================================
-   المهندس الفاحص v5 - EXPERT EDITION
-   نسخة نظيفة + مستوى خبير هندسي + كل الميزات السابقة
+   المهندس الفاحص v4 - ULTIMATE EDITION
+   (النسخة الكلاسيكية - بدون مستوى الخبير)
 ===================================================== */
 
-/* ==================== إعدادات الصعوبة ==================== */
+/* ==================== الصعوبة ==================== */
 const DIFFICULTIES = {
-  easy:   { faults: 3,  timePerFault: 15, wrongTools: 1, name: 'سهل' },
-  medium: { faults: 5,  timePerFault: 15, wrongTools: 2, name: 'متوسط' },
-  hard:   { faults: 7,  timePerFault: 15, wrongTools: 3, name: 'صعب' },
-  expert: { faults: 10, timePerFault: 10, wrongTools: 3, name: 'خبير' }, // 💀 مستوى هندسي صعب
+  easy:   { faults: 3, timePerFault: 15, wrongTools: 1, name: 'سهل' },
+  medium: { faults: 5, timePerFault: 15, wrongTools: 2, name: 'متوسط' },
+  hard:   { faults: 7, timePerFault: 15, wrongTools: 3, name: 'صعب' },
 };
 
 /* =====================================================
-   الأعطال العادية (للمبتدئين والمتوسطين)
+   الأعطال + التسلسل المنطقي
 ===================================================== */
 const FAULTS = [
   {
     id: 'solar_crack',
     deviceName: 'SOLAR PANEL',
     title: 'خلية شمسية مكسورة',
-    info: 'شرخ دقيق في الخلية رقم 7 يمنع توليد الطاقة من هذه المنطقة.',
+    info: 'شرخ دقيق في الخلية رقم 7 يمنع توليد الطاقة.',
     fact: 'الشقوق الدقيقة تقلل كفاءة اللوحة بنسبة 10-30%.',
     tip: 'تجنّب الصدمات أثناء التركيب، وافحص اللوحة بعد أي عاصفة.',
     pos: { x: 18, y: 48 },
@@ -144,85 +143,7 @@ const FAULTS = [
 ];
 
 /* =====================================================
-   أعطال مستوى الخبير (هندسية بحتة)
-===================================================== */
-const EXPERT_FAULTS = [
-  {
-    id: 'expert_wire_gauge',
-    deviceName: 'POWER CABLE',
-    title: 'احتراق الكابل الرئيسي',
-    info: 'تيار الحمل 50 أمبير. الكابل الحالي 4mm² (يتحمل 25A فقط). مطلوب استبدال الكابل.',
-    fact: 'قانون أوم وقدرة الكابل: الكابل 4mm² لا يتحمل أكثر من 25A. لتيار 50A نحتاج كابل 10mm².',
-    tip: 'دائماً اختر مقطع الكابل بناءً على أقصى تيار متوقع + هامش أمان 25%.',
-    pos: { x: 33, y: 50 },
-    targetZone: { x: 400, y: 180, w: 300, h: 220 },
-    tools: [
-      { id: 'cable_4',  name: 'كابل 4mm² (25A)', icon: '🔌', correct: false },
-      { id: 'cable_10', name: 'كابل 10mm² (60A)', icon: '🔌', correct: true },
-      { id: 'cable_2',  name: 'كابل 2mm² (15A)', icon: '🔌', correct: false },
-      { id: 'tape',     name: 'شريط عازل',        icon: '📏', correct: false },
-    ],
-    next: ['expert_fuse_rating'],
-    renderZoom: renderCableCut,
-  },
-  {
-    id: 'expert_fuse_rating',
-    deviceName: 'FUSE BOX',
-    title: 'اختيار فيوز خاطئ',
-    info: 'الفيوز احترق. الحمل الأقصى للدائرة هو 30A. تم تركيب فيوز 15A سابقاً.',
-    fact: 'الفيوز يجب أن يكون أعلى بقليل من تيار الحمل (30A). فيوز 15A سيحترق، و50A سيدمر الأجهزة.',
-    tip: 'اختر فيوزاً بسعة 30A أو 35A (أعلى بـ 10-20% من الحمل الأقصى).',
-    pos: { x: 42, y: 48 },
-    targetZone: { x: 400, y: 230, w: 240, h: 220 },
-    tools: [
-      { id: 'fuse_15', name: 'فيوز 15A', icon: '🛡️', correct: false },
-      { id: 'fuse_30', name: 'فيوز 30A', icon: '🛡️', correct: true },
-      { id: 'fuse_50', name: 'فيوز 50A', icon: '⚡', correct: false },
-      { id: 'wire',    name: 'سلك نحاسي', icon: '➰', correct: false },
-    ],
-    next: ['expert_voltage_drop'],
-    renderZoom: renderFuseBlown,
-  },
-  {
-    id: 'expert_voltage_drop',
-    deviceName: 'CHARGE CONTROLLER',
-    title: 'انهيار جهد الشحن',
-    info: 'البطارية (12V) لا تشحن. جهد اللوحة 18V، والكابل 20 متر. الجهد الواصل 11V فقط.',
-    fact: 'هبوط الجهد (Voltage Drop) بسبب طول الكابل يمنع الشحن. الحل هو كابل أسمك أو تقصير المسافة.',
-    tip: 'في الأنظمة الشمسية، لا تتجاوز نسبة هبوط الجهد 3%.',
-    pos: { x: 58, y: 47 },
-    targetZone: { x: 400, y: 190, w: 340, h: 220 },
-    tools: [
-      { id: 'reset',       name: 'إعادة تشغيل', icon: '🔄', correct: false },
-      { id: 'cable_thick', name: 'كابل أسمك (6mm²)', icon: '🔌', correct: true },
-      { id: 'add_panel',   name: 'إضافة لوحة شمسية', icon: '☀️', correct: false },
-      { id: 'water',       name: 'تبريد المنظم', icon: '💧', correct: false },
-    ],
-    next: ['expert_phase_issue'],
-    renderZoom: renderControllerFail,
-  },
-  {
-    id: 'expert_phase_issue',
-    deviceName: 'INVERTER',
-    title: 'تردد العاكس غير مطابق',
-    info: 'العاكس يعمل، لكن الأجهزة لا تعمل. تردد الخرج 60Hz، لكن الشبكة تتطلب 50Hz.',
-    fact: 'الأجهزة الحساسة (المحركات) تتطلب تردداً مطابقاً. 60Hz في شبكة 50Hz يسبب خللاً.',
-    tip: 'تأكد دائماً من مطابقة التردد (50Hz) والجهد (220V) مع متطلبات البلد.',
-    pos: { x: 91, y: 48 },
-    targetZone: { x: 400, y: 200, w: 420, h: 240 },
-    tools: [
-      { id: 'inverter_50hz', name: 'عاكس 220V 50Hz', icon: '🔀', correct: true },
-      { id: 'inverter_60hz', name: 'عاكس 220V 60Hz', icon: '🔀', correct: false },
-      { id: 'transformer',   name: 'محول رافع للجهد', icon: '⚡', correct: false },
-      { id: 'fan',           name: 'مروحة تبريد', icon: '🌀', correct: false },
-    ],
-    next: ['expert_wire_gauge'],
-    renderZoom: renderInverterBurn,
-  },
-];
-
-/* =====================================================
-   رسومات الـ Zoom (SVG)
+   رسومات الـ Zoom
 ===================================================== */
 function renderSolarCrack() {
   return `
@@ -253,16 +174,10 @@ function renderSolarCrack() {
         <path d="M 460 210 L 490 250 L 480 290">
           <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.1s" repeatCount="indefinite"/>
         </path>
-        <path d="M 500 230 L 530 270 L 520 310">
-          <animate attributeName="opacity" values="1;0.5;1" dur="1.3s" repeatCount="indefinite"/>
-        </path>
       </g>
       <circle cx="470" cy="265" r="80" fill="rgba(255,59,59,0.15)">
         <animate attributeName="r" values="80;100;80" dur="2s" repeatCount="indefinite"/>
       </circle>
-      <text x="470" y="360" text-anchor="middle" fill="#ff5757" font-size="16" font-family="monospace">
-        ⚠ CELL #7 CRACKED
-      </text>
     </svg>
   `;
 }
@@ -272,33 +187,21 @@ function renderCableCut() {
     <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="800" height="400" fill="#0a1a2e"/>
       <path d="M 50 180 Q 200 160, 350 180" stroke="#c0392b" stroke-width="22" fill="none" stroke-linecap="round"/>
-      <path d="M 50 180 Q 200 160, 350 180" stroke="#ff5757" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5"/>
       <path d="M 450 180 Q 600 160, 750 180" stroke="#c0392b" stroke-width="22" fill="none" stroke-linecap="round"/>
       <g stroke="#ffd93d" stroke-width="3" fill="none">
         <path d="M 350 175 Q 400 165, 450 175">
           <animate attributeName="d" values="M 350 175 Q 400 165, 450 175;M 350 175 Q 400 185, 450 175;M 350 175 Q 400 165, 450 175" dur="0.8s" repeatCount="indefinite"/>
         </path>
-        <path d="M 350 185 Q 400 195, 450 185">
-          <animate attributeName="d" values="M 350 185 Q 400 195, 450 185;M 350 185 Q 400 175, 450 185;M 350 185 Q 400 195, 450 185" dur="0.9s" repeatCount="indefinite"/>
-        </path>
       </g>
       <g fill="#ffe066">
         <circle cx="400" cy="175" r="4">
           <animate attributeName="r" values="4;10;4" dur="0.6s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="1;0;1" dur="0.6s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="420" cy="190" r="3">
-          <animate attributeName="r" values="3;8;3" dur="0.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="1;0;1" dur="0.8s" repeatCount="indefinite"/>
         </circle>
       </g>
       <ellipse cx="400" cy="180" rx="120" ry="70" fill="rgba(255,59,59,0.2)">
         <animate attributeName="rx" values="120;140;120" dur="1.5s" repeatCount="indefinite"/>
       </ellipse>
       <path d="M 50 240 L 750 240" stroke="#2c3e50" stroke-width="14" fill="none" stroke-linecap="round"/>
-      <text x="400" y="330" text-anchor="middle" fill="#ff5757" font-size="18" font-family="monospace">
-        ⚠ CABLE DISCONNECTED
-      </text>
     </svg>
   `;
 }
@@ -308,43 +211,23 @@ function renderFuseBlown() {
     <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="800" height="400" fill="#0a1a2e"/>
       <rect x="150" y="60" width="500" height="280" rx="16" fill="#1a3a5e" stroke="#4a7fc4" stroke-width="3"/>
-      <text x="400" y="100" text-anchor="middle" fill="#7ac0ff" font-size="18" font-family="monospace">FUSE BOX</text>
       <g>
         <rect x="220" y="150" width="80" height="130" rx="8" fill="#2a5a8a" stroke="#6a9fd4" stroke-width="2"/>
         <rect x="250" y="150" width="20" height="130" fill="#00ff88" opacity="0.6"/>
-        <circle cx="260" cy="315" r="6" fill="#00ff88"/>
       </g>
       <g>
-        <rect id="blownFuse" x="360" y="150" width="80" height="130" rx="8"
+        <rect x="360" y="150" width="80" height="130" rx="8"
               fill="#1a0a0a" stroke="#ff3b3b" stroke-width="3">
           <animate attributeName="fill" values="#1a0a0a;#3a0a0a;#1a0a0a" dur="1s" repeatCount="indefinite"/>
         </rect>
-        <rect x="390" y="150" width="20" height="130" fill="#000"/>
         <circle cx="400" cy="315" r="6" fill="#ff3b3b">
           <animate attributeName="r" values="6;10;6" dur="0.8s" repeatCount="indefinite"/>
         </circle>
-        <g fill="#ffe066">
-          <circle cx="380" cy="200" r="3">
-            <animate attributeName="cy" values="200;170;200" dur="0.7s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="1;0;1" dur="0.7s" repeatCount="indefinite"/>
-          </circle>
-          <circle cx="420" cy="220" r="2">
-            <animate attributeName="cy" values="220;190;220" dur="0.9s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="1;0;1" dur="0.9s" repeatCount="indefinite"/>
-          </circle>
-        </g>
       </g>
       <g>
         <rect x="500" y="150" width="80" height="130" rx="8" fill="#2a5a8a" stroke="#6a9fd4" stroke-width="2"/>
         <rect x="530" y="150" width="20" height="130" fill="#00ff88" opacity="0.6"/>
-        <circle cx="540" cy="315" r="6" fill="#00ff88"/>
       </g>
-      <polygon points="400,50 380,20 420,20" fill="#ff5757">
-        <animate attributeName="points" values="400,50 380,20 420,20;400,60 380,30 420,30;400,50 380,20 420,20" dur="1s" repeatCount="indefinite"/>
-      </polygon>
-      <text x="400" y="380" text-anchor="middle" fill="#ff5757" font-size="16" font-family="monospace">
-        ⚠ FUSE #2 BLOWN
-      </text>
     </svg>
   `;
 }
@@ -354,21 +237,13 @@ function renderControllerFail() {
     <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="800" height="400" fill="#0a1a2e"/>
       <rect x="200" y="80" width="400" height="240" rx="20" fill="#1a3a5e" stroke="#4a7fc4" stroke-width="3"/>
-      <text x="400" y="120" text-anchor="middle" fill="#7ac0ff" font-size="16" font-family="monospace">CHARGE CONTROLLER</text>
       <rect x="250" y="140" width="300" height="100" rx="8" fill="#1a0a0a" stroke="#ff3b3b" stroke-width="3">
         <animate attributeName="fill" values="#1a0a0a;#3a0a0a;#1a0a0a" dur="1.2s" repeatCount="indefinite"/>
       </rect>
-      <text x="400" y="180" text-anchor="middle" fill="#ff3b3b" font-size="26" font-family="monospace" font-weight="900">ERROR</text>
-      <text x="400" y="215" text-anchor="middle" fill="#ff3b3b" font-size="22" font-family="monospace">E7</text>
+      <text x="400" y="185" text-anchor="middle" fill="#ff3b3b" font-size="30" font-family="monospace" font-weight="900">E7</text>
       <circle cx="320" cy="280" r="14" fill="#2a5a8a" stroke="#6a9fd4" stroke-width="2"/>
       <circle cx="400" cy="280" r="14" fill="#2a5a8a" stroke="#6a9fd4" stroke-width="2"/>
       <circle cx="480" cy="280" r="14" fill="#2a5a8a" stroke="#6a9fd4" stroke-width="2"/>
-      <circle cx="400" cy="190" r="150" fill="rgba(255,59,59,0.1)">
-        <animate attributeName="r" values="150;180;150" dur="1.5s" repeatCount="indefinite"/>
-      </circle>
-      <text x="400" y="380" text-anchor="middle" fill="#ff5757" font-size="16" font-family="monospace">
-        ⚠ SYSTEM ERROR — RESET NEEDED
-      </text>
     </svg>
   `;
 }
@@ -378,33 +253,19 @@ function renderBatteryLow() {
     <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
       <rect x="0" y="0" width="800" height="400" fill="#0a1a2e"/>
       <rect x="100" y="60" width="600" height="280" rx="20" fill="#1a3a5e" stroke="#4a7fc4" stroke-width="3"/>
-      <text x="400" y="100" text-anchor="middle" fill="#7ac0ff" font-size="16" font-family="monospace">BATTERY PACK — CROSS SECTION</text>
       <g>
         <rect x="140" y="140" width="80" height="160" rx="8" fill="#2d8f4a" stroke="#00ff88" stroke-width="2"/>
-        <text x="180" y="230" text-anchor="middle" fill="#001526" font-size="20" font-family="monospace" font-weight="900">1</text>
         <rect x="230" y="140" width="80" height="160" rx="8" fill="#2d8f4a" stroke="#00ff88" stroke-width="2"/>
-        <text x="270" y="230" text-anchor="middle" fill="#001526" font-size="20" font-family="monospace" font-weight="900">2</text>
         <g id="swollenCell">
           <rect x="320" y="130" width="80" height="180" rx="8" fill="#5a1f1f" stroke="#ff3b3b" stroke-width="3">
             <animate attributeName="width" values="80;90;80" dur="1.5s" repeatCount="indefinite"/>
-            <animate attributeName="x" values="320;315;320" dur="1.5s" repeatCount="indefinite"/>
           </rect>
-          <text x="360" y="230" text-anchor="middle" fill="#ff8b8b" font-size="24" font-family="monospace" font-weight="900">⚠</text>
-          <text x="360" y="260" text-anchor="middle" fill="#ff5757" font-size="11" font-family="monospace">SWOLLEN</text>
+          <text x="360" y="230" text-anchor="middle" fill="#ff8b8b" font-size="24" font-family="monospace">⚠</text>
         </g>
         <rect x="410" y="140" width="80" height="160" rx="8" fill="#2d8f4a" stroke="#00ff88" stroke-width="2"/>
-        <text x="450" y="230" text-anchor="middle" fill="#001526" font-size="20" font-family="monospace" font-weight="900">4</text>
         <rect x="500" y="140" width="80" height="160" rx="8" fill="#2d8f4a" stroke="#00ff88" stroke-width="2"/>
-        <text x="540" y="230" text-anchor="middle" fill="#001526" font-size="20" font-family="monospace" font-weight="900">5</text>
         <rect x="590" y="140" width="80" height="160" rx="8" fill="#2d8f4a" stroke="#00ff88" stroke-width="2"/>
-        <text x="630" y="230" text-anchor="middle" fill="#001526" font-size="20" font-family="monospace" font-weight="900">6</text>
       </g>
-      <polygon points="360,80 340,55 380,55" fill="#ff5757">
-        <animate attributeName="points" values="360,80 340,55 380,55;360,90 340,65 380,65;360,80 340,55 380,55" dur="1s" repeatCount="indefinite"/>
-      </polygon>
-      <text x="400" y="380" text-anchor="middle" fill="#ff5757" font-size="16" font-family="monospace">
-        ⚠ CELL #3 DAMAGED
-      </text>
     </svg>
   `;
 }
@@ -416,7 +277,6 @@ function renderInverterBurn() {
       <rect x="180" y="70" width="440" height="260" rx="20" fill="#1a0a0a" stroke="#ff3b3b" stroke-width="3">
         <animate attributeName="stroke" values="#ff3b3b;#661414;#ff3b3b" dur="1.5s" repeatCount="indefinite"/>
       </rect>
-      <text x="400" y="110" text-anchor="middle" fill="#ff5757" font-size="16" font-family="monospace">INVERTER — BURNT</text>
       <g fill="#000" stroke="#4a2a2a" stroke-width="2">
         <rect x="220" y="150" width="60" height="60" rx="8"/>
         <rect x="300" y="150" width="60" height="60" rx="8"/>
@@ -424,32 +284,14 @@ function renderInverterBurn() {
         <rect x="460" y="150" width="60" height="60" rx="8"/>
         <rect x="540" y="150" width="60" height="60" rx="8"/>
       </g>
-      <g fill="rgba(100,100,100,0.4)">
+      <g fill="rgba(120,120,120,0.4)">
         <ellipse cx="280" cy="120" rx="30" ry="20">
           <animate attributeName="cy" values="120;40;120" dur="3s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.6;0;0.6" dur="3s" repeatCount="indefinite"/>
         </ellipse>
         <ellipse cx="400" cy="130" rx="35" ry="22">
           <animate attributeName="cy" values="130;30;130" dur="3.5s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.7;0;0.7" dur="3.5s" repeatCount="indefinite"/>
-        </ellipse>
-        <ellipse cx="520" cy="120" rx="30" ry="20">
-          <animate attributeName="cy" values="120;40;120" dur="2.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.6;0;0.6" dur="2.8s" repeatCount="indefinite"/>
         </ellipse>
       </g>
-      <g fill="#ffe066">
-        <circle cx="250" cy="180" r="3">
-          <animate attributeName="r" values="3;8;3" dur="0.5s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="500" cy="200" r="3">
-          <animate attributeName="r" values="3;8;3" dur="0.7s" repeatCount="indefinite"/>
-        </circle>
-      </g>
-      <line x1="220" y1="300" x2="580" y2="300" stroke="#661414" stroke-width="2" stroke-dasharray="5,5"/>
-      <text x="400" y="380" text-anchor="middle" fill="#ff5757" font-size="16" font-family="monospace">
-        ⚠ INVERTER DESTROYED
-      </text>
     </svg>
   `;
 }
@@ -474,19 +316,9 @@ function renderMissingScrew() {
         <circle cx="440" cy="280" r="14"/>
         <circle cx="640" cy="280" r="14"/>
       </g>
-      <g id="emptyHole">
-        <circle cx="540" cy="280" r="20" fill="none" stroke="#ff3b3b" stroke-width="3" stroke-dasharray="6,4">
-          <animate attributeName="r" values="20;26;20" dur="1.2s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="1;0.4;1" dur="1.2s" repeatCount="indefinite"/>
-        </circle>
-        <circle cx="540" cy="280" r="10" fill="#1a0a0a"/>
-      </g>
-      <polygon points="540,240 520,200 560,200" fill="#ff5757">
-        <animate attributeName="points" values="540,240 520,200 560,200;540,250 520,210 560,210;540,240 520,200 560,200" dur="1s" repeatCount="indefinite"/>
-      </polygon>
-      <text x="400" y="370" text-anchor="middle" fill="#ff5757" font-size="16" font-family="monospace">
-        ⚠ SCREW MISSING AT POSITION 4
-      </text>
+      <circle cx="540" cy="280" r="20" fill="none" stroke="#ff3b3b" stroke-width="3" stroke-dasharray="6,4">
+        <animate attributeName="r" values="20;26;20" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
     </svg>
   `;
 }
@@ -533,7 +365,7 @@ const Game = {
   factBtnHoverStart: 0,
   timeWarnActive: false,
 
-  bestScore: parseInt(localStorage.getItem('inspectorBestScoreV5') || '0', 10),
+  bestScore: parseInt(localStorage.getItem('inspectorBestScoreV4') || '0', 10),
 };
 
 /* =====================================================
@@ -605,7 +437,7 @@ const el = {
 };
 
 /* =====================================================
-   نظام الأصوات
+   الأصوات
 ===================================================== */
 const Sound = {
   ctx: null,
@@ -761,995 +593,4 @@ const Particles = {
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed - 1,
         life: 1,
-        decay: 0.012 + Math.random() * 0.015,
-        size: 2 + Math.random() * 4,
-        color,
-      });
-    }
-    this.startLoop();
-  },
-
-  startLoop() {
-    if (this.raf) return;
-    this.raf = requestAnimationFrame(() => this.loop());
-  },
-
-  loop() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.12;
-      p.vx *= 0.985;
-      p.life -= p.decay;
-
-      if (p.life <= 0) { this.particles.splice(i, 1); continue; }
-
-      this.ctx.save();
-      this.ctx.globalAlpha = p.life;
-      this.ctx.fillStyle = p.color;
-      this.ctx.shadowBlur = 12;
-      this.ctx.shadowColor = p.color;
-      this.ctx.beginPath();
-      this.ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.restore();
-    }
-
-    if (this.particles.length > 0) this.raf = requestAnimationFrame(() => this.loop());
-    else { this.raf = null; this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
-  },
-};
-
-/* =====================================================
-   Toast
-===================================================== */
-function showToast(text, type = 'info', duration = 1800) {
-  el.toast.textContent = text;
-  el.toast.className = 'toast ' + type;
-  void el.toast.offsetWidth;
-  el.toast.classList.add('show');
-  clearTimeout(el.toast._timeout);
-  el.toast._timeout = setTimeout(() => el.toast.classList.remove('show'), duration);
-}
-
-/* =====================================================
-   فقاعة Avatar
-===================================================== */
-let avatarTimeout = null;
-function avatarSay(text, duration = 2500) {
-  el.avatarBubble.textContent = text;
-  el.avatarBubble.classList.add('show');
-  clearTimeout(avatarTimeout);
-  avatarTimeout = setTimeout(() => el.avatarBubble.classList.remove('show'), duration);
-}
-
-/* =====================================================
-   اختيار الصعوبة
-===================================================== */
-document.querySelectorAll('.diff-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    Game.difficulty = btn.dataset.diff;
-    Game.config = DIFFICULTIES[Game.difficulty];
-    setTimeout(startGame, 300);
-  });
-});
-
-/* =====================================================
-   المتصدرون
-===================================================== */
-const Leaderboard = {
-  key: 'inspectorLeaderboardV5',
-
-  getAll() {
-    try {
-      const data = localStorage.getItem(this.key);
-      return data ? JSON.parse(data) : [];
-    } catch (e) { return []; }
-  },
-
-  save(name, score, fixed, total, stars) {
-    const all = this.getAll();
-    all.push({
-      name: name || 'مجهول',
-      score,
-      fixed,
-      total,
-      stars,
-      date: Date.now(),
-    });
-    all.sort((a, b) => b.score - a.score);
-    const top5 = all.slice(0, 5);
-    localStorage.setItem(this.key, JSON.stringify(top5));
-    return top5;
-  },
-
-  render() {
-    const list = this.getAll();
-    if (list.length === 0) {
-      el.leaderboardList.innerHTML = '<div class="leaderboard-empty">لا توجد نتائج محفوظة بعد.<br>كن أول المتصدرين!</div>';
-      return;
-    }
-
-    el.leaderboardList.innerHTML = list.map((entry, i) => {
-      const rank = i + 1;
-      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-      return `
-        <div class="leaderboard-row rank-${rank}">
-          <div class="rank-badge">${medal}</div>
-          <div class="leaderboard-name">${escapeHtml(entry.name)}</div>
-          <div class="leaderboard-score">${entry.score}</div>
-        </div>
-      `;
-    }).join('');
-  },
-};
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, s => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[s]));
-}
-
-function openLeaderboard() {
-  Leaderboard.render();
-  el.leaderboardScreen.classList.remove('hidden');
-}
-
-function closeLeaderboard() {
-  el.leaderboardScreen.classList.add('hidden');
-}
-
-el.closeLeaderboardBtn.addEventListener('click', () => {
-  closeLeaderboard();
-  el.startScreen.classList.remove('hidden');
-  el.scene.classList.add('hidden');
-  el.hud.classList.add('hidden');
-});
-
-el.startLeaderboardBtn.addEventListener('click', openLeaderboard);
-el.showLeaderboardBtn.addEventListener('click', openLeaderboard);
-
-el.saveScoreBtn.addEventListener('click', () => {
-  const name = (el.playerName.value || '').trim() || 'مجهول';
-  const stars = el.stars.textContent.split('⭐').length - 1;
-  Leaderboard.save(name, Game.score, Game.fixedFaults, Game.totalFaults, stars);
-
-  el.nameInputWrapper.classList.add('saved');
-  showToast('✅ تم حفظ النتيجة!', 'success', 1500);
-
-  setTimeout(() => {
-    openLeaderboard();
-  }, 800);
-});
-
-/* =====================================================
-   بدء اللعبة
-===================================================== */
-async function startGame() {
-  Sound.init();
-
-  el.startScreen.classList.add('hidden');
-  el.endScreen.classList.add('hidden');
-  el.leaderboardScreen.classList.add('hidden');
-  el.scene.classList.remove('hidden');
-  el.hud.classList.remove('hidden');
-  el.hintBar.classList.remove('hidden');
-
-  Game.running = true;
-  Game.score = 0;
-  Game.combo = 0;
-  Game.maxCombo = 0;
-  Game.totalFaults = Game.config.faults;
-  Game.timeLeft = Game.config.faults * Game.config.timePerFault;
-  Game.fixedFaults = 0;
-  Game.faultIndex = 0;
-  Game.faultActive = false;
-  Game.faultDiagnosed = false;
-  Game.faultFixed = false;
-  Game.holdingTool = null;
-  Game.toolbarVisible = false;
-  Game.usedFaults = [];
-  Game.lastFaultId = null;
-  Game.factBtnHoverStart = 0;
-  Game.timeWarnActive = false;
-
-  el.hudScore.textContent = '0';
-  el.hudTime.textContent = Game.timeLeft;
-  el.hudTime.classList.remove('warning');
-  el.hudFaults.textContent = `1 / ${Game.totalFaults}`;
-  el.comboBox.classList.add('hidden');
-  el.cursorTool.textContent = '';
-  el.factCard.classList.add('hidden');
-  el.factCard.classList.remove('active');
-  el.progressFill.style.width = '0%';
-  el.nameInputWrapper.classList.remove('saved');
-  el.app.classList.remove('time-warning', 'time-critical');
-
-  const handsReady = await initHands();
-  if (handsReady) await startCamera();
-
-  startTimer();
-
-  if (Game.difficulty === 'expert') {
-    avatarSay('مستوى الخبراء! حظاً موفقاً 💀🔥', 4000);
-    showToast('⚠️ وضع الخبير: عقوبة زمنية للأدوات الخاطئة!', 'error', 3500);
-  } else {
-    avatarSay('هيا نبدأ! 👷', 3000);
-  }
-
-  setTimeout(() => {
-    showFault(0);
-    showToast('🎯 ابحث عن العطل الأول', 'info', 2200);
-  }, 700);
-
-  Sound.start();
-}
-
-/* =====================================================
-   عرض العطل (بتسلسل منطقي + دعم الخبير)
-===================================================== */
-function showFault(index) {
-  if (index >= Game.totalFaults) { endGame(true); return; }
-
-  // 🌟 تحديد مصدر الأعطال: خبير أم عادي؟
-  const isExpert = (Game.difficulty === 'expert');
-  const faultSource = isExpert ? EXPERT_FAULTS : FAULTS;
-
-  let pool = [];
-  if (Game.lastFaultId) {
-    const last = faultSource.find(f => f.id === Game.lastFaultId);
-    if (last && last.next) {
-      pool = last.next
-        .map(id => faultSource.find(f => f.id === id))
-        .filter(f => f && !Game.usedFaults.includes(f.id));
-    }
-  }
-
-  if (pool.length === 0) {
-    pool = faultSource.filter(f => !Game.usedFaults.includes(f.id));
-  }
-
-  if (pool.length === 0) {
-    Game.usedFaults = [];
-    pool = faultSource.slice();
-  }
-
-  const chosen = pool[Math.floor(Math.random() * pool.length)];
-  Game.usedFaults.push(chosen.id);
-  Game.lastFaultId = chosen.id;
-
-  Game.faultIndex = index;
-  Game.currentFault = chosen;
-  Game.faultActive = true;
-  Game.faultDiagnosed = false;
-  Game.faultFixed = false;
-
-  const sceneRect = el.scene.getBoundingClientRect();
-  const fx = (chosen.pos.x / 100) * sceneRect.width;
-  const fy = (chosen.pos.y / 100) * sceneRect.height;
-
-  el.faultPoint.style.left = fx + 'px';
-  el.faultPoint.style.top = fy + 'px';
-  el.faultPoint.classList.remove('hidden', 'fixed');
-
-  el.hudFaults.textContent = `${index + 1} / ${Game.totalFaults}`;
-
-  Game.faultScreenX = fx;
-  Game.faultScreenY = fy;
-
-  Sound.tick();
-
-  clearTimeout(Game.hintTimeout);
-  Game.hintTimeout = setTimeout(() => {
-    if (!Game.faultDiagnosed) {
-      showToast('💡 قرّب إصبعك أكثر من النقطة الحمراء', 'info', 3000);
-    }
-  }, 15000);
-}
-
-/* =====================================================
-   Hover على العطل
-===================================================== */
-function checkHover(x, y) {
-  if (!Game.faultActive || Game.faultFixed || Game.faultDiagnosed) return;
-
-  const dx = x - Game.faultScreenX;
-  const dy = y - Game.faultScreenY;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const inside = dist < 80;
-
-  if (inside) {
-    if (!Game.hoverStart) {
-      Game.hoverStart = performance.now();
-      Sound.ping();
-    }
-    const elapsed = performance.now() - Game.hoverStart;
-    const progress = Math.min(elapsed / Game.hoverDuration, 1);
-    const circumference = 2 * Math.PI * 40;
-    el.cursorProgress.style.strokeDashoffset = circumference * (1 - progress);
-    el.fingerCursor.classList.add('locked');
-
-    if (!Game.targetLocked && progress > 0.15) {
-      Game.targetLocked = true;
-      Sound.lock();
-    }
-
-    if (elapsed >= Game.hoverDuration) diagnoseFault();
-  } else {
-    Game.hoverStart = 0;
-    Game.targetLocked = false;
-    el.cursorProgress.style.strokeDashoffset = 251.2;
-    el.fingerCursor.classList.remove('locked');
-  }
-}
-
-/* =====================================================
-   التشخيص
-===================================================== */
-function diagnoseFault() {
-  if (Game.faultDiagnosed) return;
-  Game.faultDiagnosed = true;
-  Game.faultActive = false;
-
-  Sound.diagnose();
-  clearTimeout(Game.hintTimeout);
-
-  el.cursorProgress.style.strokeDashoffset = 251.2;
-  el.fingerCursor.classList.remove('locked');
-
-  const fault = Game.currentFault;
-
-  el.zoomDeviceName.textContent = fault.deviceName;
-  el.zoomCanvas.innerHTML = fault.renderZoom();
-  el.zoomInfoText.textContent = fault.info;
-
-  el.zoomView.classList.remove('hidden');
-  setTimeout(() => el.zoomView.classList.add('active'), 30);
-
-  prepareToolbar(fault);
-
-  el.toolbar.classList.remove('hidden');
-  Game.toolbarVisible = true;
-
-  el.hintBar.innerHTML = '🖐️ مرّر إصبعك فوق الأداة الصحيحة (ابقَ عليها لحظة)';
-
-  showToast('🔍 تم التشخيص — اختر الأداة', 'info', 2000);
-  avatarSay('اختر الأداة المناسبة! 🔧', 3000);
-}
-
-/* =====================================================
-   شريط الأدوات
-===================================================== */
-function prepareToolbar(fault) {
-  el.toolbarTools.innerHTML = '';
-  el.cursorTool.textContent = '';
-
-  const correct = fault.tools.find(t => t.correct);
-  const wrongs = fault.tools.filter(t => !t.correct);
-  const numWrong = Game.config.wrongTools;
-  const shuffledWrongs = wrongs.sort(() => Math.random() - 0.5).slice(0, numWrong);
-  const toolsToShow = [correct, ...shuffledWrongs].sort(() => Math.random() - 0.5);
-
-  const isExpertMode = Game.difficulty === 'expert';
-
-  toolsToShow.forEach(tool => {
-    const btn = document.createElement('div');
-    btn.className = 'tool-item';
-    btn.dataset.toolId = tool.id;
-    btn.dataset.correct = tool.correct ? '1' : '0';
-    btn.innerHTML = `
-      <span class="tool-icon">${tool.icon}</span>
-      <span class="tool-name" style="${isExpertMode ? 'color:#ffe066;font-weight:900;' : ''}">${tool.name}</span>
-    `;
-
-    btn.addEventListener('mousedown', (e) => {
-      if (Game.faultFixed) return;
-      e.preventDefault();
-      pickTool(tool, btn);
-    });
-
-    btn.addEventListener('touchstart', (e) => {
-      if (Game.faultFixed) return;
-      e.preventDefault();
-      pickTool(tool, btn);
-    }, { passive: false });
-
-    el.toolbarTools.appendChild(btn);
-  });
-}
-
-/* =====================================================
-   اختيار الأداة
-===================================================== */
-function pickTool(tool, btnEl) {
-  if (Game.faultFixed || Game.holdingTool) return;
-
-  Game.holdingTool = tool;
-  el.cursorTool.textContent = tool.icon;
-  el.fingerCursor.classList.add('holding');
-  btnEl.classList.add('picked');
-
-  Sound.grabTool(tool.id);
-  showToast(`✋ أمسكت: ${tool.name}`, 'info', 1200);
-}
-
-/* =====================================================
-   Hover الأداة بالإصبع
-===================================================== */
-let toolHoverTimer = null;
-let toolHoverTarget = null;
-
-function checkToolHover(x, y) {
-  if (Game.holdingTool) return;
-
-  const buttons = el.toolbarTools.querySelectorAll('.tool-item');
-  let hoveredBtn = null;
-
-  buttons.forEach(btn => {
-    if (btn.classList.contains('picked')) return;
-    const r = btn.getBoundingClientRect();
-    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
-      hoveredBtn = btn;
-    }
-  });
-
-  if (hoveredBtn !== toolHoverTarget) {
-    clearTimeout(toolHoverTimer);
-    toolHoverTarget = hoveredBtn;
-
-    buttons.forEach(b => {
-      b.style.transform = '';
-      b.style.borderColor = '';
-      b.style.boxShadow = '';
-    });
-
-    if (hoveredBtn) {
-      hoveredBtn.style.transform = 'translateY(-6px) scale(1.05)';
-      hoveredBtn.style.borderColor = '#ffe066';
-      hoveredBtn.style.boxShadow = '0 0 25px rgba(255,217,61,0.7)';
-
-      toolHoverTimer = setTimeout(() => {
-        if (toolHoverTarget === hoveredBtn && !Game.holdingTool) {
-          const toolId = hoveredBtn.dataset.toolId;
-          const tool = Game.currentFault.tools.find(t => t.id === toolId);
-          if (tool) {
-            pickTool(tool, hoveredBtn);
-            hoveredBtn.style.transform = '';
-            hoveredBtn.style.borderColor = '';
-            hoveredBtn.style.boxShadow = '';
-          }
-        }
-      }, 400);
-    }
-  }
-}
-
-/* =====================================================
-   إفلات الأداة
-===================================================== */
-let dropTimer = null;
-
-function checkDropWithDelay(x, y) {
-  const zoomRect = el.zoomCanvas.getBoundingClientRect();
-  const insideZoom =
-    x >= zoomRect.left && x <= zoomRect.right &&
-    y >= zoomRect.top && y <= zoomRect.bottom;
-
-  if (!insideZoom) {
-    clearTimeout(dropTimer);
-    dropTimer = null;
-    return;
-  }
-
-  const vbX = ((x - zoomRect.left) / zoomRect.width) * 800;
-  const vbY = ((y - zoomRect.top) / zoomRect.height) * 400;
-
-  const zone = Game.currentFault.targetZone;
-  const inZone =
-    vbX >= zone.x - zone.w / 2 && vbX <= zone.x + zone.w / 2 &&
-    vbY >= zone.y - zone.h / 2 && vbY <= zone.y + zone.h / 2;
-
-  if (inZone && !dropTimer) {
-    dropTimer = setTimeout(() => {
-      if (Game.holdingTool) tryDropTool(x, y);
-      dropTimer = null;
-    }, 600);
-  } else if (!inZone) {
-    clearTimeout(dropTimer);
-    dropTimer = null;
-  }
-}
-
-function tryDropTool(x, y) {
-  if (!Game.holdingTool || Game.faultFixed) return;
-
-  const zoomRect = el.zoomCanvas.getBoundingClientRect();
-  const insideZoom =
-    x >= zoomRect.left && x <= zoomRect.right &&
-    y >= zoomRect.top && y <= zoomRect.bottom;
-
-  if (!insideZoom) return;
-
-  const vbX = ((x - zoomRect.left) / zoomRect.width) * 800;
-  const vbY = ((y - zoomRect.top) / zoomRect.height) * 400;
-
-  const zone = Game.currentFault.targetZone;
-  const inZone =
-    vbX >= zone.x - zone.w / 2 && vbX <= zone.x + zone.w / 2 &&
-    vbY >= zone.y - zone.h / 2 && vbY <= zone.y + zone.h / 2;
-
-  const tool = Game.holdingTool;
-  const toolEl = el.toolbarTools.querySelector(`[data-tool-id="${tool.id}"]`);
-
-  if (tool.correct && inZone) {
-    applyRepair(x, y);
-  } else if (!tool.correct && inZone) {
-    wrongToolAttempt(toolEl);
-  } else {
-    showToast('❌ أفلت الأداة فوق الجزء المعطوب', 'error', 1500);
-    releaseTool();
-  }
-}
-
-function wrongToolAttempt(toolEl) {
-  Sound.wrongTool();
-  shakeScene();
-  showToast('❌ أداة خاطئة! قد تسبب ضرراً', 'error', 1800);
-
-  if (toolEl) toolEl.classList.add('wrong-pick');
-  setTimeout(() => {
-    if (toolEl) toolEl.classList.remove('wrong-pick');
-  }, 500);
-
-  // خصم نقاط
-  Game.score = Math.max(0, Game.score - 20);
-  el.hudScore.textContent = Game.score;
-
-  // 💀 عقوبة الوقت في مستوى الخبير
-  if (Game.difficulty === 'expert') {
-    Game.timeLeft = Math.max(0, Game.timeLeft - 3);
-    el.hudTime.textContent = Game.timeLeft;
-    avatarSay('⏱️ -3 ثوانٍ عقوبة!', 2000);
-    
-    if (Game.timeLeft <= 0) {
-      clearInterval(Game.timerInterval);
-      endGame(false);
-      return;
-    }
-  } else {
-    avatarSay('أداة خاطئة! جرب غيرها 😅', 2500);
-  }
-
-  releaseTool();
-}
-
-function releaseTool() {
-  if (!Game.holdingTool) return;
-  const toolEl = el.toolbarTools.querySelector(`[data-tool-id="${Game.holdingTool.id}"]`);
-  if (toolEl) toolEl.classList.remove('picked');
-  Game.holdingTool = null;
-  el.cursorTool.textContent = '';
-  el.fingerCursor.classList.remove('holding');
-
-  clearTimeout(toolHoverTimer);
-  toolHoverTarget = null;
-  el.toolbarTools.querySelectorAll('.tool-item').forEach(b => {
-    b.style.transform = '';
-    b.style.borderColor = '';
-    b.style.boxShadow = '';
-  });
-}
-
-/* =====================================================
-   تطبيق الإصلاح
-===================================================== */
-function applyRepair(x, y) {
-  Game.faultFixed = true;
-  Game.toolbarVisible = false;
-  const fault = Game.currentFault;
-
-  Sound.faultSound(fault.id);
-  Particles.burst(x, y, '#00ff88', 60);
-
-  const base = 100;
-  const speedBonus = Math.floor(Math.random() * 30) + 20;
-  Game.combo++;
-  Game.maxCombo = Math.max(Game.maxCombo, Game.combo);
-  const multiplier = Math.min(Game.combo, 5);
-  const total = (base + speedBonus) * multiplier;
-  Game.score += total;
-  el.hudScore.textContent = Game.score;
-
-  if (Game.combo > 1) {
-    el.comboBox.classList.remove('hidden');
-    el.hudCombo.textContent = 'x' + Game.combo;
-  }
-
-  showToast(`✅ +${total} نقطة!`, 'success', 1800);
-
-  updateProgress();
-  releaseTool();
-  flashZoom();
-  Game.fixedFaults++;
-
-  avatarSay('أحسنت! 💪', 2000);
-
-  setTimeout(() => {
-    el.zoomView.classList.remove('active');
-    setTimeout(() => {
-      el.zoomView.classList.add('hidden');
-      el.toolbar.classList.add('hidden');
-      el.faultPoint.classList.add('fixed');
-      el.hintBar.innerHTML = '👉 حرّك إصبع السبابة نحو <span style="color:#ff5757">نقطة العطل</span> وابقَ عليها ثانية';
-
-      document.querySelectorAll('.window-light').forEach(w => w.classList.add('on'));
-
-      showFactCard(fault);
-    }, 350);
-  }, 900);
-}
-
-function updateProgress() {
-  const percent = (Game.fixedFaults / Game.totalFaults) * 100;
-  el.progressFill.style.width = percent + '%';
-}
-
-function flashZoom() {
-  let count = 0;
-  const iv = setInterval(() => {
-    el.zoomCanvas.style.filter = count % 2 === 0 ? 'brightness(1.5)' : 'brightness(1)';
-    count++;
-    if (count > 5) {
-      clearInterval(iv);
-      el.zoomCanvas.style.filter = 'brightness(1)';
-    }
-  }, 100);
-}
-
-function shakeScene() {
-  el.scene.classList.add('shake');
-  setTimeout(() => el.scene.classList.remove('shake'), 400);
-}
-
-/* =====================================================
-   بطاقة المعلومة
-===================================================== */
-function showFactCard(fault) {
-  clearInterval(Game.timerInterval);
-  Game.timerInterval = null;
-
-  el.factDevice.textContent = fault.deviceName;
-  el.factTitle.textContent = fault.title;
-  el.factText.textContent = fault.fact || 'لم تُضف معلومة بعد.';
-  el.factTip.textContent = fault.tip || 'لم تُضف نصيحة بعد.';
-
-  el.factCard.classList.remove('hidden');
-  setTimeout(() => el.factCard.classList.add('active'), 30);
-
-  Sound.factAppear();
-  Game.factBtnHoverStart = 0;
-}
-
-function hideFactCard() {
-  el.factCard.classList.remove('active');
-  setTimeout(() => {
-    el.factCard.classList.add('hidden');
-
-    if (Game.running && !Game.timerInterval) {
-      startTimer();
-    }
-
-    showFault(Game.faultIndex + 1);
-  }, 350);
-}
-
-el.factContinueBtn.addEventListener('click', () => {
-  Sound.tone(1200, 0.1, 'square', 0.08);
-  hideFactCard();
-});
-
-/* =====================================================
-   إغلاق الزووم
-===================================================== */
-el.zoomCloseBtn.addEventListener('click', () => {
-  if (Game.faultFixed) return;
-  el.zoomView.classList.remove('active');
-  setTimeout(() => el.zoomView.classList.add('hidden'), 300);
-  el.toolbar.classList.add('hidden');
-  Game.toolbarVisible = false;
-  releaseTool();
-  Game.faultDiagnosed = false;
-  Game.faultActive = true;
-  Game.hoverStart = 0;
-});
-
-/* =====================================================
-   المؤقت
-===================================================== */
-function startTimer() {
-  clearInterval(Game.timerInterval);
-  Game.timerInterval = setInterval(() => {
-    if (!Game.running) return;
-    Game.timeLeft--;
-    el.hudTime.textContent = Game.timeLeft;
-
-    if (Game.timeLeft <= 10) {
-      el.hudTime.classList.add('warning');
-      if (Game.timeLeft > 0) Sound.tick();
-
-      if (Game.timeLeft <= 5) {
-        el.app.classList.add('time-warning');
-        if (Game.timeLeft <= 3) {
-          el.app.classList.add('time-critical');
-        }
-      }
-    }
-
-    if (Game.timeLeft <= 0) {
-      clearInterval(Game.timerInterval);
-      endGame(false);
-    }
-  }, 1000);
-}
-
-/* =====================================================
-   نهاية اللعبة
-===================================================== */
-function endGame(won) {
-  Game.running = false;
-  clearInterval(Game.timerInterval);
-  clearTimeout(Game.hintTimeout);
-
-  el.hud.classList.add('hidden');
-  el.hintBar.classList.add('hidden');
-  el.fingerCursor.classList.remove('visible');
-  el.zoomView.classList.add('hidden');
-  el.toolbar.classList.add('hidden');
-  el.faultPoint.classList.add('hidden');
-  el.factCard.classList.add('hidden');
-  el.factCard.classList.remove('active');
-  el.app.classList.remove('time-warning', 'time-critical');
-
-  if (Game.score > Game.bestScore) {
-    Game.bestScore = Game.score;
-    localStorage.setItem('inspectorBestScoreV5', Game.bestScore.toString());
-  }
-
-  const stars = calculateStars(Game.score, won);
-
-  el.endTitle.textContent = won ? '🎉 مهمة ناجحة!' : '⏰ انتهى الوقت!';
-  el.stars.textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
-  el.finalScore.textContent = Game.score;
-  el.finalFixed.textContent = `${Game.fixedFaults} / ${Game.totalFaults}`;
-  el.bestScore.textContent = Game.bestScore;
-
-  el.endScreen.classList.remove('hidden');
-
-  Sound.end();
-  avatarSay('انتهت المهمة! 🏁', 3000);
-
-  for (let i = 0; i < 6; i++) {
-    setTimeout(() => {
-      Particles.burst(
-        Math.random() * window.innerWidth,
-        Math.random() * window.innerHeight * 0.5,
-        ['#ffe066', '#00ff88', '#7ac0ff'][i % 3],
-        40
-      );
-    }, i * 180);
-  }
-}
-
-function calculateStars(score, won) {
-  if (!won && Game.fixedFaults === 0) return 1;
-  if (score >= 800) return 5;
-  if (score >= 600) return 4;
-  if (score >= 400) return 3;
-  if (score >= 200) return 2;
-  return 1;
-}
-
-/* =====================================================
-   MediaPipe
-===================================================== */
-async function initHands() {
-  if (typeof Hands === 'undefined') {
-    console.error('MediaPipe Hands غير محمّل');
-    return false;
-  }
-
-  Game.hands = new Hands({
-    locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`,
-  });
-
-  Game.hands.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 0,
-    minDetectionConfidence: 0.6,
-    minTrackingConfidence: 0.6,
-    selfieMode: false,
-  });
-
-  Game.hands.onResults(onHandsResults);
-  return true;
-}
-
-async function startCamera() {
-  if (typeof Camera === 'undefined') return false;
-  Game.camera = new Camera(el.video, {
-    onFrame: async () => {
-      if (Game.hands) await Game.hands.send({ image: el.video });
-    },
-    width: 640,
-    height: 480,
-  });
-  try {
-    await Game.camera.start();
-    return true;
-  } catch (e) {
-    console.error('فشل الكاميرا', e);
-    showToast('⚠ سيعمل المؤشر بالماوس', 'error', 3000);
-    return false;
-  }
-}
-
-/* =====================================================
-   معالجة الإصبع
-===================================================== */
-function onHandsResults(results) {
-  if (el.camCanvas) {
-    el.camCanvas.width = el.camCanvas.clientWidth;
-    el.camCanvas.height = el.camCanvas.clientHeight;
-    const ctx = el.camCanvas.getContext('2d');
-    ctx.save();
-    ctx.clearRect(0, 0, el.camCanvas.width, el.camCanvas.height);
-    if (results.image) ctx.drawImage(results.image, 0, 0, el.camCanvas.width, el.camCanvas.height);
-    ctx.restore();
-  }
-
-  if (!Game.running) return;
-
-  if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-    Game.fingerActive = false;
-    el.fingerCursor.classList.remove('visible');
-    return;
-  }
-
-  const tip = results.multiHandLandmarks[0][8];
-  const x = (1 - tip.x) * window.innerWidth;
-  const y = tip.y * window.innerHeight;
-
-  Game.fingerActive = true;
-  Game.fingerX = x;
-  Game.fingerY = y;
-
-  el.fingerCursor.classList.remove('hidden');
-  el.fingerCursor.classList.add('visible');
-  el.fingerCursor.style.left = x + 'px';
-  el.fingerCursor.style.top = y + 'px';
-
-  if (el.factCard.classList.contains('active')) {
-    handleFactButtonHover(x, y);
-    return;
-  }
-
-  if (Game.holdingTool) {
-    checkDropWithDelay(x, y);
-  } else if (Game.toolbarVisible && Game.faultDiagnosed && !Game.faultFixed) {
-    checkToolHover(x, y);
-  } else {
-    checkHover(x, y);
-  }
-}
-
-function handleFactButtonHover(x, y) {
-  const btnRect = el.factContinueBtn.getBoundingClientRect();
-  const onBtn =
-    x >= btnRect.left && x <= btnRect.right &&
-    y >= btnRect.top && y <= btnRect.bottom;
-
-  if (onBtn) {
-    if (!Game.factBtnHoverStart) Game.factBtnHoverStart = performance.now();
-    const elapsed = performance.now() - Game.factBtnHoverStart;
-    if (elapsed >= 600) {
-      Game.factBtnHoverStart = 0;
-      el.factContinueBtn.click();
-    }
-  } else {
-    Game.factBtnHoverStart = 0;
-  }
-}
-
-/* =====================================================
-   دعم الماوس
-===================================================== */
-document.addEventListener('mousemove', (e) => {
-  if (!Game.running || Game.fingerActive) return;
-
-  el.fingerCursor.classList.remove('hidden');
-  el.fingerCursor.classList.add('visible');
-  el.fingerCursor.style.left = e.clientX + 'px';
-  el.fingerCursor.style.top = e.clientY + 'px';
-
-  if (el.factCard.classList.contains('active')) {
-    handleFactButtonHover(e.clientX, e.clientY);
-    return;
-  }
-
-  if (Game.holdingTool) {
-    checkDropWithDelay(e.clientX, e.clientY);
-  } else if (Game.toolbarVisible && Game.faultDiagnosed && !Game.faultFixed) {
-    checkToolHover(e.clientX, e.clientY);
-  } else {
-    checkHover(e.clientX, e.clientY);
-  }
-});
-
-document.addEventListener('mouseup', (e) => {
-  if (!Game.running || Game.fingerActive) return;
-  if (Game.holdingTool) tryDropTool(e.clientX, e.clientY);
-});
-
-document.addEventListener('touchmove', (e) => {
-  if (!Game.running || Game.fingerActive) return;
-  const t = e.touches[0];
-  el.fingerCursor.classList.remove('hidden');
-  el.fingerCursor.classList.add('visible');
-  el.fingerCursor.style.left = t.clientX + 'px';
-  el.fingerCursor.style.top = t.clientY + 'px';
-
-  if (el.factCard.classList.contains('active')) {
-    handleFactButtonHover(t.clientX, t.clientY);
-    return;
-  }
-
-  if (Game.holdingTool) {
-    checkDropWithDelay(t.clientX, t.clientY);
-  } else if (Game.toolbarVisible && Game.faultDiagnosed && !Game.faultFixed) {
-    checkToolHover(t.clientX, t.clientY);
-  } else {
-    checkHover(t.clientX, t.clientY);
-  }
-}, { passive: true });
-
-/* =====================================================
-   أزرار النهاية
-===================================================== */
-el.replayBtn.addEventListener('click', () => {
-  el.endScreen.classList.add('hidden');
-  startGame();
-});
-
-el.menuBtn.addEventListener('click', () => {
-  el.endScreen.classList.add('hidden');
-  el.startScreen.classList.remove('hidden');
-  el.scene.classList.add('hidden');
-  el.hud.classList.add('hidden');
-  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
-});
-
-/* =====================================================
-   تغيير حجم النافذة
-===================================================== */
-window.addEventListener('resize', () => {
-  if (Game.faultActive && Game.currentFault && !Game.faultFixed) {
-    const sceneRect = el.scene.getBoundingClientRect();
-    Game.faultScreenX = (Game.currentFault.pos.x / 100) * sceneRect.width;
-    Game.faultScreenY = (Game.currentFault.pos.y / 100) * sceneRect.height;
-    el.faultPoint.style.left = Game.faultScreenX + 'px';
-    el.faultPoint.style.top = Game.faultScreenY + 'px';
-  }
-});
-
-/* =====================================================
-   التهيئة
-===================================================== */
-Particles.init();
-el.bestScore.textContent = Game.bestScore;
-
-console.log('%c🏗️ المهندس الفاحص v5 - EXPERT EDITION', 'color:#ffe066;font-size:20px;font-weight:900;');
-console.log('%c+ Expert Mode · Progress · Leaderboard · Smart Sequence · Avatar', 'color:#7ac0ff;font-size:11px;');
+        decay: 0.012 + Math.random() * 0
